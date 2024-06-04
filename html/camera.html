@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <title>カメラ</title>
+</head>
+
+<body>
+    <div>
+        <button id="capture">キャプチャ</button>
+        <button id="save">保存</button>
+    </div>
+    <div>
+        <video id="video"></video>
+    </div>
+    <div>
+        <canvas id="canvas"></canvas>
+    </div>
+    <script>
+        const videoArea = document.querySelector('#video');
+        const canvas = document.querySelector('#canvas');
+        const digit = '2-digit';
+        let date;
+        document.querySelector('#capture').addEventListener('click', () => {
+            date = new Date();
+            canvas.width = videoArea.videoWidth;
+            canvas.height = videoArea.videoHeight;
+            canvas.getContext('2d').drawImage(videoArea, 0, 0);
+        });
+        document.querySelector('#save').addEventListener('click', () => {
+            if (date) {
+                const a = document.createElement('a');
+                a.href = canvas.toDataURL('image/jpeg');
+                a.download = `${date.toLocaleString('ja-JP', {
+                    year: 'numeric',
+                    month: digit,
+                    day: digit,
+                    hour: digit,
+                    minute: digit,
+                    second: digit
+                }).replaceAll(/[^\d]/g, '')}.jpg`;
+                a.click();
+            }
+        });
+        navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: false
+        }).then(stream => {
+            videoArea.srcObject = stream;
+            videoArea.play();
+        }).catch(e => alert(e));
+    </script>
+</body>
+
+</html>

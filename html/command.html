@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+   <meta charset="UTF-8">
+   <title>コマンド</title>
+   <style>
+      pre {
+         border-style: solid;
+         white-space: pre-wrap;
+      }
+   </style>
+</head>
+
+<body>
+   <h1>Windowsコマンド</h1>
+   <p>特定のコマンドの詳細情報は、"HELP コマンド名" を入力してください</p>
+   <table border="1">
+      <tr>
+         <td>ASSOC</td>
+         <td>ファイル拡張子の関連付けを表示または変更します。</td>
+      </tr>
+      <tr>
+         <td>ATTRIB</td>
+         <td>ファイルの属性を表示または変更します。</td>
+      </tr>
+      <tr>
+         <td>BREAK</td>
+         <td>拡張 CTRL+C チェックを設定または解除します。</td>
+      </tr>
+      <tr>
+         <td>BCDEDIT</td>
+         <td>ブート データベースのプロパティを設定して起動時の読み込みを制御します。</td>
+      </tr>
+      <tr>
+         <td>CACLS</td>
+         <td>ファイルのアクセス制御リスト (ACL) を表示または変更します。</td>
+      </tr>
+      <tr>
+         <td>CALL</td>
+         <td>バッチ プログラム中から、別のバッチ プログラムを呼び出します。</td>
+      </tr>
+      <tr>
+         <td>CD</td>
+         <td>現在のディレクトリを表示または変更します。</td>
+      </tr>
+      <tr>
+         <td>CHCP</td>
+         <td>有効なコード ページ番号を表示または設定します。</td>
+      </tr>
+      <tr>
+         <td>CHDIR</td>
+         <td>現在のディレクトリを表示または変更します。</td>
+      </tr>
+      <tr>
+         <td>CHKDSK</td>
+         <td>ディスクをチェックし、状態を表示します。</td>
+      </tr>
+      <tr>
+         <td>CHKNTFS</td>
+         <td>起動時のディスクのチェックを表示または変更します。</td>
+      </tr>
+      <tr>
+         <td>CLS</td>
+         <td>画面を消去します。</td>
+      </tr>
+      <tr>
+         <td>CMD</td>
+         <td>Windows コマンド インタープリターを新しく起動します。</td>
+      </tr>
+      <tr>
+         <td>COLOR</td>
+         <td>コンソールの文字と背景の既定の色を設定します。</td>
+      </tr>
+      <tr>
+         <td>COMP</td>
+         <td>2 個のファイルまたはファイルの集合の内容を比較します。</td>
+      </tr>
+      <tr>
+         <td>COMPACT</td>
+         <td>NTFS パーティション上のファイルの圧縮状態を表示または変更します。</td>
+      </tr>
+      <tr>
+         <td>CONVERT</td>
+         <td>FAT ボリュームを NTFS に変換します。現在のドライブは変換できません。</td>
+      </tr>
+      <tr>
+         <td>COPY</td>
+         <td>1 個以上のファイルを別の場所にコピーします。</td>
+      </tr>
+      <tr>
+         <td>DATE</td>
+         <td>日付を表示または変更します。</td>
+      </tr>
+      <tr>
+         <td>DEL</td>
+         <td>1 個以上のファイルを削除します。</td>
+      </tr>
+      <tr>
+         <td>DIR</td>
+         <td>ディレクトリ中のファイルやサブディレクトリの一覧を表示します。</td>
+      </tr>
+      <tr>
+         <td>DISKPART</td>
+         <td>ディスク パーティションのプロパティを表示または構成します。</td>
+      </tr>
+      <tr>
+         <td>DOSKEY</td>
+         <td>コマンド ラインの編集、Windows コマンドの再呼び出し、マクロの作成をします。</td>
+      </tr>
+      <tr>
+         <td>DRIVERQUERY</td>
+         <td>現在のデバイス ドライバーの状態とプロパティを表示します。</td>
+      </tr>
+      <tr>
+         <td>ECHO</td>
+         <td>メッセージの表示、コマンド エコーのオン、オフの指定をします。</td>
+      </tr>
+      <tr>
+         <td>ENDLOCAL</td>
+         <td>バッチ ファイルで、環境変数のローカル化を終了します。</td>
+      </tr>
+      <tr>
+         <td>ERASE</td>
+         <td>1 個以上のファイルを削除します。</td>
+      </tr>
+      <tr>
+         <td>EXIT</td>
+         <td>CMD.EXE プログラム (コマンド インタープリター) を終了します。</td>
+      </tr>
+      <tr>
+         <td>FC</td>
+         <td>2 個のファイルまたはファイルの集合の内容を比較して、それらの違いを表示します。</td>
+      </tr>
+      <tr>
+         <td>FIND</td>
+         <td>ファイルの中からテキスト文字列を検索します。</td>
+      </tr>
+      <tr>
+         <td>FINDSTR</td>
+         <td>ファイルの中から文字列を検索します。</td>
+      </tr>
+      <tr>
+         <td>FOR</td>
+         <td>指定されたコマンドを、ファイルの集合の各ファイルに対して実行します。</td>
+      </tr>
+      <tr>
+         <td>FORMAT</td>
+         <td>Windows で使用するためのディスクをフォーマットします。</td>
+      </tr>
+      <tr>
+         <td>FSUTIL</td>
+         <td>ファイル システム プロパティを表示または構成します。</td>
+      </tr>
+      <tr>
+         <td>FTYPE</td>
+         <td>ファイル拡張子の関連付けで使われるファイル タイプを表示または変更します。</td>
+      </tr>
+      <tr>
+         <td>GOTO</td>
+         <td>バッチ プログラム中で、ラベルで定義されている行へ Windows コマンドインタープリターの実行を移します。</td>
+      </tr>
+      <tr>
+         <td>GPRESULT</td>
+         <td>コンピューターまたはユーザーのグループ ポリシー情報を表示します。</td>
+      </tr>
+      <tr>
+         <td>GRAFTABL</td>
+         <td>Windows がグラフィック モードで拡張文字セットを表示できるようにします。</td>
+      </tr>
+      <tr>
+         <td>HELP</td>
+         <td>Windows コマンドのヘルプ情報を表示します。</td>
+      </tr>
+      <tr>
+         <td>ICACLS</td>
+         <td>ファイルおよびディレクトリの ACL を表示、変更、バックアップまたは復元します。</td>
+      </tr>
+      <tr>
+         <td>IF</td>
+         <td>バッチ ファイル中で、条件処理を実行します。</td>
+      </tr>
+      <tr>
+         <td>LABEL</td>
+         <td>ディスクのボリューム ラベルを作成、変更、または削除します。</td>
+      </tr>
+      <tr>
+         <td>MD</td>
+         <td>ディレクトリを作成します。</td>
+      </tr>
+      <tr>
+         <td>MKDIR</td>
+         <td>ディレクトリを作成します。</td>
+      </tr>
+      <tr>
+         <td>MKLINK</td>
+         <td>シンボリック リンクおよびハード リンクを作成します。</td>
+      </tr>
+      <tr>
+         <td>MODE</td>
+         <td>システム デバイスを設定します。</td>
+      </tr>
+      <tr>
+         <td>MORE</td>
+         <td>出力を一度に 1 画面ずつ表示します。</td>
+      </tr>
+      <tr>
+         <td>MOVE</td>
+         <td>1 個以上のファイルをディレクトリから別のディレクトリに移動します。</td>
+      </tr>
+      <tr>
+         <td>OPENFILES</td>
+         <td>リモート ユーザーによって開かれている共有ファイルを表示します。</td>
+      </tr>
+      <tr>
+         <td>PATH</td>
+         <td>実行可能ファイルの検索パスを表示または設定します。</td>
+      </tr>
+      <tr>
+         <td>PAUSE</td>
+         <td>バッチ ファイルの処理を一時停止し、メッセージを表示します。</td>
+      </tr>
+      <tr>
+         <td>POPD</td>
+         <td>現在のディレクトリを PUSHD で保存したディレクトリに戻します。</td>
+      </tr>
+      <tr>
+         <td>PRINT</td>
+         <td>テキスト ファイルを印刷します。</td>
+      </tr>
+      <tr>
+         <td>PROMPT</td>
+         <td>Windows コマンド プロンプトを変更します。</td>
+      </tr>
+      <tr>
+         <td>PUSHD</td>
+         <td>現在のディレクトリを保存して、変更します。</td>
+      </tr>
+      <tr>
+         <td>RD</td>
+         <td>ディレクトリを削除します。</td>
+      </tr>
+      <tr>
+         <td>RECOVER</td>
+         <td>不良または欠陥ディスクから読み出し可能な情報を復元します。</td>
+      </tr>
+      <tr>
+         <td>REM</td>
+         <td>バッチ ファイルや CONFIG.SYS の中で、コメント (注釈) を記録します。</td>
+      </tr>
+      <tr>
+         <td>REN</td>
+         <td>ファイルの名前を変更します。</td>
+      </tr>
+      <tr>
+         <td>RENAME</td>
+         <td>ファイルの名前を変更します。</td>
+      </tr>
+      <tr>
+         <td>REPLACE</td>
+         <td>ファイルを置き換えます。</td>
+      </tr>
+      <tr>
+         <td>RMDIR</td>
+         <td>ディレクトリを削除します。</td>
+      </tr>
+      <tr>
+         <td>ROBOCOPY</td>
+         <td>ファイルやディレクトリ構造をコピーする詳細ユーティリティです。</td>
+      </tr>
+      <tr>
+         <td>SET</td>
+         <td>Windows 環境変数を表示、設定、または削除します。</td>
+      </tr>
+      <tr>
+         <td>SETLOCAL</td>
+         <td>バッチ ファイルで、環境変数のローカル化を開始します。</td>
+      </tr>
+      <tr>
+         <td>SC</td>
+         <td>サービス (バックグラウンド プロセス) を表示または構成します。</td>
+      </tr>
+      <tr>
+         <td>SCHTASKS</td>
+         <td>コンピューター上で実行されるコマンドとプログラムをスケジュールします。</td>
+      </tr>
+      <tr>
+         <td>SHIFT</td>
+         <td>バッチ ファイルで、置き換え可能パラメーターの位置をシフトします。</td>
+      </tr>
+      <tr>
+         <td>SHUTDOWN</td>
+         <td>ローカルまたはリモートのコンピューターのシャットダウンを許可します。</td>
+      </tr>
+      <tr>
+         <td>SORT</td>
+         <td>入力を並べ替えます。</td>
+      </tr>
+      <tr>
+         <td>START</td>
+         <td>別のウィンドウを起動して、指定したプログラムまたはコマンドを実行します。</td>
+      </tr>
+      <tr>
+         <td>SUBST</td>
+         <td>パスをドライブ名で置き換えます。</td>
+      </tr>
+      <tr>
+         <td>SYSTEMINFO</td>
+         <td>コンピューター特有のプロパティと構成を表示します。</td>
+      </tr>
+      <tr>
+         <td>TASKLIST</td>
+         <td>サービスを含む現在実行されているすべてのタスクを表示します。</td>
+      </tr>
+      <tr>
+         <td>TASKKILL</td>
+         <td>実行されているプロセスまたはアプリケーションを削除または停止します。</td>
+      </tr>
+      <tr>
+         <td>TIME</td>
+         <td>システム時刻を表示または変更します。</td>
+      </tr>
+      <tr>
+         <td>TITLE</td>
+         <td>コマンド プロンプト ウィンドウのタイトルを設定します。</td>
+      </tr>
+      <tr>
+         <td>TREE</td>
+         <td>ドライブまたはパスのディレクトリ構造を図式表示します。</td>
+      </tr>
+      <tr>
+         <td>TYPE</td>
+         <td>テキスト ファイルの内容を表示します。</td>
+      </tr>
+      <tr>
+         <td>VER</td>
+         <td>Windows のバージョンを表示します。</td>
+      </tr>
+      <tr>
+         <td>VERIFY</td>
+         <td>ファイルがディスクへ正しく書き込まれたかを照合するかどうか Windows へ指定します。</td>
+      </tr>
+      <tr>
+         <td>VOL</td>
+         <td>ディスクのボリューム ラベルとシリアル番号を表示します。</td>
+      </tr>
+      <tr>
+         <td>XCOPY</td>
+         <td>ファイルやディレクトリ構造をコピーします。</td>
+      </tr>
+      <tr>
+         <td>WMIC</td>
+         <td>対話型コマンド シェルで WMI 情報を表示します。</td>
+      </tr>
+   </table>
+   <h1>gitコマンド</h1>
+   <pre>使用法: <code>git [--version] [--help] [-C &lt;path&gt;] [-c &lt;name&gt;=&lt;value&gt;]
+           [--exec-path[=&lt;path&gt;]] [--html-path] [--man-path] [--info-path]
+           [-p | --paginate | -P | --no-pager] [--no-replace-objects] [--bare]
+           [--git-dir=&lt;path&gt;] [--work-tree=&lt;path&gt;] [--namespace=&lt;name&gt;]
+           &lt;command&gt; [&lt;args（引数）&gt;]</code></pre>
+   <p>これらは、さまざまなシチュエーションで利用される、一般的なGitコマンドです。</p>
+   <table border="1">
+      <tr>
+         <td>git clone</td>
+         <td>リポジトリを新しいディレクトリにクローンします。</td>
+      </tr>
+      <tr>
+         <td>git init</td>
+         <td>空のGitリポジトリを作成するか、もしくは既にあるものを初期化します。</td>
+      </tr>
+      <tr>
+         <td>git add</td>
+         <td>インデックスにファイルコンテンツを追加します。</td>
+      </tr>
+      <tr>
+         <td>git mv</td>
+         <td>ファイル・ディレクトリ・シンボリックリンクの移動やリネームが行えます。</td>
+      </tr>
+      <tr>
+         <td>git restore</td>
+         <td>ワーキングツリーファイルをリストアします。</td>
+      </tr>
+      <tr>
+         <td>git rm</td>
+         <td>ワーキングツリーとインデックスからファイルを削除します。</td>
+      </tr>
+      <tr>
+         <td>git bisect</td>
+         <td>バイナリ検索を使用して、バグを引き起こしたコミットを見つけます。</td>
+      </tr>
+      <tr>
+         <td>git diff</td>
+         <td>コミット間の差分をみたり、コミットとワークツリーの差分をみたりします。</td>
+      </tr>
+      <tr>
+         <td>git grep</td>
+         <td>パターンにマッチした行を表示します。</td>
+      </tr>
+      <tr>
+         <td>git log</td>
+         <td>コミットログを見ます。</td>
+      </tr>
+      <tr>
+         <td>git show</td>
+         <td>オブジェクトの種類を表示します。</td>
+      </tr>
+      <tr>
+         <td>git status</td>
+         <td>ワーキングツリーのステータスを表示します。</td>
+      </tr>
+      <tr>
+         <td>git branch</td>
+         <td>リストし、ブランチの作成や削除をします。</td>
+      </tr>
+      <tr>
+         <td>git commit</td>
+         <td>リポジトリ変更のコミット記録をします。</td>
+      </tr>
+      <tr>
+         <td>git merge</td>
+         <td>２つ以上の開発履歴をまとめます。</td>
+      </tr>
+      <tr>
+         <td>git rebase</td>
+         <td>他のベースチップの上で、コミットを再適用します。</td>
+      </tr>
+      <tr>
+         <td>git reset</td>
+         <td>現在のヘッドを指定された状態にリセットします。</td>
+      </tr>
+      <tr>
+         <td>git switch</td>
+         <td>ブランチをスイッチします。</td>
+      </tr>
+      <tr>
+         <td>git tag</td>
+         <td>GPGで署名されたタグオブジェクトを作成、一覧表示、削除、または検証します。</td>
+      </tr>
+      <tr>
+         <td>git fetch</td>
+         <td>他のリポジトリから、オブジェクトやrefsをダウンロードします。</td>
+      </tr>
+      <tr>
+         <td>git pull</td>
+         <td>別のリポジトリまたはローカルブランチから取得して統合します。</td>
+      </tr>
+      <tr>
+         <td>git push</td>
+         <td>関連するオブジェクトとともにリモートrefsを更新します。</td>
+      </tr>
+      <tr>
+         <td>git help -a/-g</td>
+         <td>使用可能なサブコマンドといくつかのコンセプトガイドがリスト表示されます。</td>
+      </tr>
+      <tr>
+         <td>git help</td>
+         <td>特定のサブコマンドまたは概念について読んでください。</td>
+      </tr>
+      <tr>
+         <td>git help git</td>
+         <td>システムの概要を見ることができます。</td>
+      </tr>
+   </table>
+</body>
+
+</html>

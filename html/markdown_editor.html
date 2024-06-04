@@ -1,0 +1,86 @@
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Markdown Editor</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.1/github-markdown.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    .main {
+      display: flex;
+    } 
+
+    .textarea {
+      width: 50%;
+      padding: 3%;
+    }
+
+    .markdown-body {
+      width: 50%;
+      overflow: auto;
+      border-style: solid;
+      padding: 3%;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="header">
+    <input id="import" type="file">
+    <button id="load">ロード</button>
+    <button id="save">保存</button>
+    <button id="export">ファイル出力</button>
+  </div>
+  <div class="main">
+    <textarea class="textarea"></textarea>
+    <div class="markdown-body"></div>
+  </div>
+  <script>
+    const textarea = document.querySelector('.textarea');
+    const preview = document.querySelector('.markdown-body');
+    setTimeout(() => {
+      const height = `${innerHeight - document.querySelector('.header').clientHeight}px`;
+      textarea.style.setProperty('height', height);
+      preview.style.setProperty('height', height);
+    }, 100);
+    textarea.addEventListener('input', e => {
+      preview.innerHTML = marked.parse(e.target.value);
+      hljs.highlightAll();
+    });
+    document.querySelector('#import').addEventListener('change', e => {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = () => {
+        localStorage.setItem('name', file.name);
+        textarea.value = reader.result;
+        textarea.dispatchEvent(new Event('input'));
+      };
+      reader.readAsText(file);
+    });
+    document.querySelector('#load').addEventListener('click', () => {
+      textarea.value = localStorage.getItem('data');
+      textarea.dispatchEvent(new Event('input'));
+    });
+    document.querySelector('#save').addEventListener('click', () => {
+      localStorage.setItem('data', textarea.value);
+    });
+    document.querySelector('#export').addEventListener('click', () => {
+      const fileName = prompt('ファイル名', localStorage.getItem('name') || '');
+      if (fileName) {
+        localStorage.setItem('name', fileName);
+        const blob = new Blob([textarea.value], { type: 'text/plain' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.href = url;
+        link.download = fileName;
+        link.click();
+        URL.revokeObjectURL(url);
+      }
+    });
+  </script>
+</body>
+
+</html>

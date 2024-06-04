@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>変換</title>
+</head>
+
+<body>
+  <h2>入力</h2>
+  <textarea id="input"></textarea>
+  <p id="input-size">文字数: 0</p>
+  <h2>結果</h2>
+  <h3>UNICODEエスケープ</h3>
+  <textarea id="escape"></textarea>
+  <p id="escape-size">文字数: 0</p>
+  <h3>UNICODEアンエスケープ</h3>
+  <textarea id="unescape"></textarea>
+  <p id="unescape-size">文字数: 0</p>
+  <h3>URLエンコード(encodeURI)</h3>
+  <textarea id="encodeURI"></textarea>
+  <p id="encodeURI-size">文字数: 0</p>
+  <h3>URLデコード(decodeURI)</h3>
+  <textarea id="decodeURI"></textarea>
+  <p id="decodeURI-size">文字数: 0</p>
+  <h3>URLエンコード(encodeURIComponent)</h3>
+  <textarea id="encodeURIComponent"></textarea>
+  <p id="encodeURIComponent-size">文字数: 0</p>
+  <h3>URLデコード(decodeURIComponent)</h3>
+  <textarea id="decodeURIComponent"></textarea>
+  <p id="decodeURIComponent-size">文字数: 0</p>
+  <h3>Base64エンコード</h3>
+  <textarea id="encodeBase64"></textarea>
+  <p id="encodeBase64-size">文字数: 0</p>
+  <h3>Base64デコード</h3>
+  <textarea id="decodeBase64"></textarea>
+  <p id="decodeBase64-size">文字数: 0</p>
+  <h3>Base64URLエンコード</h3>
+  <textarea id="encodeBase64Url"></textarea>
+  <p id="encodeBase64Url-size">文字数: 0</p>
+  <h3>Base64URLデコード</h3>
+  <textarea id="decodeBase64Url"></textarea>
+  <p id="decodeBase64Url-size">文字数: 0</p>
+  <script>
+    const obj = {
+      'escape': escape,
+      'unescape': unescape,
+      'encodeURI': encodeURI,
+      'decodeURI': decodeURI,
+      'encodeURIComponent': encodeURIComponent,
+      'decodeURIComponent': decodeURIComponent,
+      'encodeBase64': encodeBase64,
+      'decodeBase64': decodeBase64,
+      'encodeBase64Url': encodeBase64Url,
+      'decodeBase64Url': decodeBase64Url,
+    }
+    const input = document.querySelector('#input');
+    input.addEventListener('input', () => {
+      const value = input.value;
+      document.querySelector(`#input-size`).textContent = `文字数: ${value.length}`;
+      Object.entries(obj).forEach(([id, func]) => {
+        let result;
+        try {
+          result = func(value);
+        } catch {
+          result = value;
+        }
+        document.querySelector(`#${id}`).value = result;
+        document.querySelector(`#${id}-size`).textContent = `文字数: ${result.length}`;
+      });
+    });
+    document.querySelectorAll('textarea').forEach(element => {
+      element.style.setProperty('width', '90%');
+      element.addEventListener('focus', () => element.select());
+    });
+
+    function encodeBase64(value) {
+      return btoa(encodeURIComponent(value));
+    }
+
+    function decodeBase64(value) {
+      return decodeURIComponent(atob(value));
+    }
+
+    function encodeBase64Url(value) {
+      return encodeBase64(value).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+    }
+
+    function decodeBase64Url(value) {
+      const base64 = value.replace(/-/g, '+').replace(/_/g, '/');
+      return decodeBase64(base64);
+    }
+  </script>
+</body>
+
+</html>

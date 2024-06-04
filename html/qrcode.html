@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width">
+  <title>QRコード</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+
+<body>
+  <p>
+    <input type="text" id="input" placeholder="QRコードにしたい文字列を入力">
+    <button id="button">QRコード生成</button>
+  </p>
+  <div id="qrcode"></div>
+  <script>
+    document.querySelector('#button').addEventListener('click', () => {
+      const qrcode = document.querySelector('#qrcode');
+      qrcode.textContent = '';
+      new QRCode(qrcode, {
+        text: document.querySelector('#input').value,
+        width: 128,
+        height: 128,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+      });
+    });
+  </script>
+</body>
+
+</html>

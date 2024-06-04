@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Javaのラムダ式とStream API</title>
+  <meta content="width=device-width,initial-scale=1,shrink-to-fit=no,viewport-fit=cover" name="viewport">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.1/github-markdown.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+</head>
+
+<body class="markdown-body">
+  <div class="style-8qb8m4">
+    <h1 data-logly-title="true" class="style-wo2a1i">入門Javaのラムダ式とStream API</h1>
+  </div>
+  <section class="it-MdContent">
+    <div id="personal-public-article-body">
+      <div class="mdContent-inner style-0">
+        <h1>
+          <span id="環境" class="fragment"></span><a href="#%E7%92%B0%E5%A2%83"><i class="fa fa-link"></i></a>環境
+        </h1>
+        <ul>
+          <li>JDK 17</li>
+        </ul>
+        <h1>
+          <span id="はじめに" class="fragment"></span><a href="#%E3%81%AF%E3%81%98%E3%82%81%E3%81%AB"><i
+              class="fa fa-link"></i></a>はじめに
+        </h1>
+        <p>例えば、こんな<code>Member</code>レコードがあって、</p>
+        <div class="code-frame" data-lang="java">
+          <div class="highlight">
+            <pre><code><span class="kd">public</span> <span class="n">record</span> <span class="nf">Member</span><span class="o">(</span><span class="nc">String</span> <span class="n">name</span><span class="o">,</span> <span class="kt">int</span> <span class="n">age</span><span class="o">)</span> <span class="o">{</span>
+<span class="o">}</span>
+</code></pre>
+          </div>
+        </div>
+        <p>こんな<code>List&lt;Member&gt;</code>があるとします。</p>
+        <div class="code-frame" data-lang="java">
+          <div class="highlight">
+            <pre><code><span class="nc">List</span><span class="o">&lt;</span><span class="nc">Member</span><span class="o">&gt;</span> <span class="n">memberList</span> <span class="o">=</span> <span class="nc">List</span><span class="o">.</span><span class="na">of</span><span class="o">(</span>
+  <span class="k">new</span> <span class="nf">Member</span><span class="o">(</span><span class="s">"佐々木久美"</span><span class="o">,</span> <span class="mi">27</span><span class="o">),</span>
+  <span class="k">new</span> <span class="nf">Member</span><span class="o">(</span><span class="s">"金村美玖"</span><span class="o">,</span> <span class="mi">20</span><span class="o">),</span>
+  <span class="k">new</span> <span class="nf">Member</span><span class="o">(</span><span class="s">"髙橋未来虹"</span><span class="o">,</span> <span class="mi">19</span><span class="o">),</span>
+  <span class="k">new</span> <span class="nf">Member</span><span class="o">(</span><span class="s">"正源寺陽子"</span><span class="o">,</span> <span class="mi">16</span><span class="o">)</span>
+<span class="o">);</span>
+</code></pre>
+          </div>
+        </div>
+        <p>この<code>memberList</code>から「18歳以上のメンバーの名前だけのリスト」を作りたい場合、どうしましょうか？
+        </p>
+        <p>ベタに書くならこんな感じになります。</p>
+        <div class="code-frame" data-lang="java">
+          <div class="highlight">
+            <pre><code><span class="nc">List</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">&gt;</span> <span class="n">resultList</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ArrayList</span><span class="o">&lt;&gt;();</span>
+<span class="k">for</span> <span class="o">(</span><span class="nc">Member</span> <span class="n">member</span> <span class="o">:</span> <span class="n">memberList</span><span class="o">)</span> <span class="o">{</span>
+  <span class="k">if</span> <span class="o">(</span><span class="n">member</span><span class="o">.</span><span class="na">age</span><span class="o">()</span> <span class="o">&gt;=</span> <span class="mi">18</span><span class="o">)</span> <span class="o">{</span>
+    <span class="nc">String</span> <span class="n">name</span> <span class="o">=</span> <span class="n">member</span><span class="o">.</span><span class="na">name</span><span class="o">();</span>
+    <span class="n">resultList</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">name</span><span class="o">);</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+          </div>
+        </div>
+        <p>しかし、このコードには次のような問題があります。</p>
+        <ul>
+          <li>何がやりたいのかを理解するには、コードを詳細に読む必要がある</li>
+          <li>forやifの多用はバグを生みやすい</li>
+        </ul>
+        <p>そこで、Stream APIの登場です。Stream
+          APIは、<code>List</code>などのコレクションに対して抽出や変換を行うAPIです。Stream APIを使うことで、</p>
+        <ul>
+          <li>何がやりたいのかすぐに理解できる</li>
+          <li>forやifが不要なのでバグを生みにくい</li>
+        </ul>
+        <p>というメリットが得られます。</p>
+        <p>具体的にはこんな感じです（後で詳細に解説します）。</p>
+        <div class="code-frame" data-lang="java">
+          <div class="highlight">
+            <pre><code><span class="c1">// ListをStreamに変換する</span>
+<span class="nc">List</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">&gt;</span> <span class="n">resultList</span> <span class="o">=</span> <span class="n">memberList</span><span class="o">.</span><span class="na">stream</span><span class="o">()</span>
+  <span class="c1">// １８歳以上のメンバーのみ抽出する</span>
+  <span class="o">.</span><span class="na">filter</span><span class="o">(</span><span class="n">member</span> <span class="o">-&gt;</span> <span class="n">member</span><span class="o">.</span><span class="na">age</span><span class="o">()</span> <span class="o">&gt;=</span> <span class="mi">18</span><span class="o">)</span>
+  <span class="c1">// MemberからString（メンバーの名前）に変換する</span>
+  <span class="o">.</span><span class="na">map</span><span class="o">(</span><span class="n">member</span> <span class="o">-&gt;</span> <span class="n">member</span><span class="o">.</span><span class="na">name</span><span class="o">())</span>
+  <span class="c1">// Listに変換する</span>
+  <span class="o">.</span><span class="na">toList</span><span class="o">();</span>
+</code></pre>
+          </div>
+        </div>
+        <p><code>.stream().filter(...).map(...).toList()</code>の部分がStream APIです。
+        </p>
+        <p>
+          そして、<code>filter()</code>・<code>map()</code>の引数<code>member -&gt; member.age() &gt;= 18</code>・<code>member -&gt; member.name()</code>の部分がラムダ式です。
+        </p>
+        <p>なので、Stream APIを理解するには、まずはラムダ式を理解する必要があります。</p>
+        <h1>
+          <span id="ラムダ式" class="fragment"></span><a href="#%E3%83%A9%E3%83%A0%E3%83%80%E5%BC%8F"><i
+              class="fa fa-link"></i></a>ラムダ式
+        </h1>
+        <h2>
+          <span id="匿名クラスとは" class="fragment"></span><a
+            href="#%E5%8C%BF%E5%90%8D%E3%82%AF%E3%83%A9%E3%82%B9%E3%81%A8%E3%81%AF"><i
+              class="fa fa-link"></i></a>匿名クラスとは
+        </h2>
+        <p>
+          ラムダ式を理解するには、まずは匿名クラスを理解する必要があります。ちょいちょい使う割にはJava入門書などではあまり説明されていないので、ここで説明します。</p>
+        <p>次のような<code>Hoge</code>インタフェースがあるとします。</p>
+        <div class="code-frame" data-lang="java">
+          <div class="code-lang"><span class="bold">インタフェース</span></div>
+          <div class="highlight">
+            <pre><code><span class="kd">interface</span> <span class="nc">Hoge</span> <span class="o">{</span>
+  <span class="kt">int</span> <span class="nf">doSomething</span><span class="o">(</span><span class="nc">String</span> <span class="n">str</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre>
+          </div>
+        </div>
+        <p>このインタフェースを使いたい場合、通常だと実装クラスを作りますね。</p>
+        <div class="code-frame" data-lang="java">
+          <div class="code-lang"><span class="bold">実装クラス</span></div>
+          <div class="highlight">
+            <pre><code><span class="kd">class</span> <span class="nc">HogeImpl</span> <span class="kd">implements</span> <span class="nc">Hoge</span> <span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">doSomething</span><span class="o">(</span><span class="nc">String</span> <span class="n">str</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">str</span><span class="o">.</span><span class="na">length</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+          </div>
+        </div>
+        <div class="code-frame" data-lang="java">
+          <div class="code-lang"><span class="bold">通常の書き方</span></div>
+          <div class="highlight">
+            <pre><code><span class="nc">Hoge</span> <span class="n">hoge</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HogeImpl</span><span class="o">();</span>
+<span class="kt">int</span> <span class="n">length</span> <span class="o">=</span> <span class="n">hoge</span><span class="o">.</span><span class="na">doSomething</span><span class="o">(</span><span class="s">"あいうえお"</span><span class="o">);</span>
+<span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">length</span><span class="o">);</span>  <span class="c1">// "5"と出力される</span>
+</code></pre>
+          </div>
+        </div>
+        <p>しかし、この<code>HogeImpl</code>クラスは1箇所でしか使わない場合は、クラスを作るのが大げさな感じがします。</p>
+        <p>
+          そこで、前出のような通常のクラス定義を行わずに<code>Hoge</code>インタフェースを使う方法があります。それが匿名クラスです。見た目は違いますが、前出のコードと全く同じことをしています。
+        </p>
+        <div class="code-frame" data-lang="java">
+          <div class="code-lang"><span class="bold">匿名クラスを使った書き方</span></div>
+          <div class="highlight">
+            <pre><code><span class="c1">// これが匿名クラス</span>
+<span class="nc">Hoge</span> <span class="n">hoge</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Hoge</span><span class="o">()</span> <span class="o">{</span>
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="kt">int</span> <span class="nf">doSomething</span><span class="o">(</span><span class="nc">String</span> <span class="n">str</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="n">str</span><span class="o">.</span><span class="na">length</span><span class="o">();</span>
+  <span class="o">}</span>
+<span class="o">};</span>
+<span class="kt">int</span> <span class="n">length</span> <span class="o">=</span> <span class="n">hoge</span><span class="o">.</span><span class="na">doSomething</span><span class="o">(</span><span class="s">"あいうえお"</span><span class="o">);</span>
+<span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">length</span><span class="o">);</span>  <span class="c1">// "5"と出力される</span>
+</code></pre>
+          </div>
+        </div>
+        <p>クラス定義をしなくてもいいので楽ですね！</p>
+        <p>しかし一方で、何となくゴチャゴチャしている感じがします。何故かと言うと、推測できるはずの情報も書いているからです。</p>
+        <ul>
+          <li>右辺の<code>new Hoge()</code>は、左辺に<code>Hoge</code>と書いてあるから推測可能なはず
+          </li>
+          <li>
+            <code>Hoge</code>インタフェースには抽象メソッドが1つしか無いので、メソッド名<code>doSomething</code>・戻り値の型<code>int</code>・引数の型<code>String</code>は推測可能なはず
+          </li>
+        </ul>
+        <h2>
+          <span id="ラムダ式-1" class="fragment"></span><a href="#%E3%83%A9%E3%83%A0%E3%83%80%E5%BC%8F-1"><i
+              class="fa fa-link"></i></a>ラムダ式
+        </h2>
+        <p>そこで、ラムダ式の登場です。ラムダ式は、匿名クラスの推測可能な部分を省略した書き方です。</p>
+        <blockquote>
+          <p>
+            文法的に正確に言うとラムダ式は匿名クラスの省略記法<strong>ではない</strong>のですが、使う上では省略記法と思っても大丈夫です。</p>
+        </blockquote>
+        <div class="code-frame" data-lang="java">
+          <div class="code-lang"><span class="bold">（再掲）匿名クラスを使った書き方</span></div>
+          <div class="highlight">
+            <pre><code><span class="c1">// これが匿名クラス</span>
+<span class="nc">Hoge</span> <span class="n">hoge</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Hoge</span><span class="o">()</span> <span class="o">{</span>
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="kt">int</span> <span class="nf">doSomething</span><span class="o">(</span><span class="nc">String</span> <span class="n">str</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="n">str</span><span class="o">.</span><span class="na">length</span><span class="o">();</span>
+  <span class="o">}</span>
+<span class="o">};</span>
+<span class="kt">int</span> <span class="n">length</span> <span class="o">=</span> <span class="n">hoge</span><span class="o">.</span><span class="na">doSomething</span><span class="o">(</span><span class="s">"あいうえお"</span><span class="o">);</span>
+<span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">length</span><span class="o">);</span>  <span class="c1">// "5"と出力される</span>
+</code></pre>
+          </div>
+        </div>
+        <div class="code-frame" data-lang="java">
+          <div class="code-lang"><span class="bold">ラムダ式を使った書き方</span></div>
+          <div class="highlight">
+            <pre><code><span class="c1">// これがラムダ式。やっていることは匿名クラスの場合と全く同じです。</span>
+<span class="nc">Hoge</span> <span class="n">hoge</span> <span class="o">=</span> <span class="o">(</span><span class="n">str</span><span class="o">)</span> <span class="o">-&gt;</span> <span class="o">{</span>
+  <span class="k">return</span> <span class="n">str</span><span class="o">.</span><span class="na">length</span><span class="o">();</span>
+<span class="o">};</span>
+<span class="kt">int</span> <span class="n">length</span> <span class="o">=</span> <span class="n">hoge</span><span class="o">.</span><span class="na">doSomething</span><span class="o">(</span><span class="s">"あいうえお"</span><span class="o">);</span>
+<span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">length</span><span class="o">);</span>  <span class="c1">// "5"と出力される</span>
+</code></pre>
+          </div>
+        </div>
+        <blockquote>
+          <p>引数名は任意です。つまり、今回だと<code>str</code>でなくても構いません。好きな名前を付けてOKです。</p>
+        </blockquote>
+        <p>
+          ただし、全ての匿名クラスをラムダ式で書き換えられる訳ではありません。ラムダ式で書き換えられるのは、「関数型インタフェースの匿名クラスのみ」です。</p>
+        <p>
+          関数型インタフェースとは、平たく言うと「抽象メソッドを1つだけ持つインタフェース」です（抽象メソッドの他に、defaultメソッドやstaticメソッドがあっても構いません）。</p>
+        <p>関数型インタフェースには<code>@FunctionalInterface</code>アノテーションを付加することができます。
+        </p>
+        <div class="code-frame" data-lang="java">
+          <div class="highlight">
+            <pre><code><span class="nd">@FunctionalInterface</span>
+<span class="kd">interface</span> <span class="nc">Hoge</span> <span class="o">{</span>
+  <span class="kt">int</span> <span class="nf">doSomething</span><span class="o">(</span><span class="nc">String</span> <span class="n">str</span><span class="o">);</span>
+<span class="o">}</span>
+</code></pre>
+          </div>
+        </div>
+        <blockquote>
+          <p>
+            <code>@FunctionalInterface</code>アノテーションを付加しているのに抽象メソッドが2つ以上あった場合などは、コンパイルエラーになります。
+          </p>
+        </blockquote>
+        <h2>
+          <span id="ラムダ式の省略" class="fragment"></span><a
+            href="#%E3%83%A9%E3%83%A0%E3%83%80%E5%BC%8F%E3%81%AE%E7%9C%81%E7%95%A5"><i
+              class="fa fa-link"></i></a>ラムダ式の省略
+        </h2>
+        <p>ラムダ式には、更なる省略記法があります。</p>
+        <ul>
+          <li>引数が1つだけの場合、<code>()</code>は省略できる
+            <ul>
+              <li>引数が2個以上や0個の場合は省略不可</li>
+            </ul>
+          </li>
+          <li>
+            <code>{}</code>内の処理が1行だけの場合、<code>{}</code>は省略できる
+            <ul>
+              <li>処理が2行以上の場合は省略不可</li>
+            </ul>
+          </li>
+          <li>
+            処理が<code>return ○;</code>だけの場合、<code>return</code>・<code>;</code>は省略できる</li>
+        </ul>
+        <p>ということで、省略前と省略後のラムダ式を並べるとこんな感じです。</p>
+        <div class="code-frame" data-lang="java">
+          <div class="code-lang"><span class="bold">省略前のラムダ式</span></div>
+          <div class="highlight">
+            <pre><code><span class="nc">Hoge</span> <span class="n">hoge</span> <span class="o">=</span> <span class="o">(</span><span class="n">str</span><span class="o">)</span> <span class="o">-&gt;</span> <span class="o">{</span>
+  <span class="k">return</span> <span class="n">str</span><span class="o">.</span><span class="na">length</span><span class="o">();</span>
+<span class="o">};</span>
+</code></pre>
+          </div>
+        </div>
+        <div class="code-frame" data-lang="java">
+          <div class="code-lang"><span class="bold">省略後のラムダ式</span></div>
+          <div class="highlight">
+            <pre><code><span class="nc">Hoge</span> <span class="n">hoge</span> <span class="o">=</span> <span class="n">str</span> <span class="o">-&gt;</span> <span class="n">str</span><span class="o">.</span><span class="na">length</span><span class="o">();</span>
+</code></pre>
+          </div>
+        </div>
+        <p>一番よく使う書き方は、このような省略後の書き方です。少しずつ練習していきましょう。</p>
+        <h2>
+          <span id="メソッド参照" class="fragment"></span><a href="#%E3%83%A1%E3%82%BD%E3%83%83%E3%83%89%E5%8F%82%E7%85%A7"><i
+              class="fa fa-link"></i></a>メソッド参照
+        </h2>
+        <p>実は、ラムダ式には更なる省略記法のようなものがあります。それがメソッド参照です。</p>
+        <div class="code-frame" data-lang="java">
+          <div class="code-lang"><span class="bold">ラムダ式</span></div>
+          <div class="highlight">
+            <pre><code><span class="nc">Hoge</span> <span class="n">hoge</span> <span class="o">=</span> <span class="n">str</span> <span class="o">-&gt;</span> <span class="n">str</span><span class="o">.</span><span class="na">length</span><span class="o">();</span>
+</code></pre>
+          </div>
+        </div>
+        <div class="code-frame" data-lang="java">
+          <div class="code-lang"><span class="bold">メソッド参照</span></div>
+          <div class="highlight">
+            <pre><code><span class="nc">Hoge</span> <span class="n">hoge</span> <span class="o">=</span> <span class="nl">String:</span><span class="o">:</span><span class="n">length</span><span class="o">;</span>
+</code></pre>
+          </div>
+        </div>
+        <p>ただし、個人的には分かりづらいなと思うので、あまりメソッド参照は使いません。</p>
+        <h1>
+          <span id="stream-api" class="fragment"></span><a href="#stream-api"><i class="fa fa-link"></i></a>Stream API
+        </h1>
+        <p>お待たせしました。ようやっとStream APIの登場です。Stream
+          APIは、<code>List</code>などのコレクションに対して抽出や変換を行うAPIです。</p>
+        <h2>
+          <span id="streamの生成" class="fragment"></span><a href="#stream%E3%81%AE%E7%94%9F%E6%88%90"><i
+              class="fa fa-link"></i></a>Streamの生成
+        </h2>
+        <p>Stream
+          APIの主役は<code>java.util.stream.Stream</code>インタフェースが主役です。このインタフェースに、値を抽出・変換したり、最終結果を<code>List</code>などに変換するメソッドが定義されています。
+        </p>
+        <p>
+          なので、まずは<code>List</code>から<code>Stream</code>を作る必要があります。<code>List</code>の<code>stream()</code>で<code>Stream</code>を生成できます。
+        </p>
+        <div class="code-frame" data-lang="java">
+          <div class="code-lang"><span class="bold">ListからStreamを生成</span></div>
+          <div class="highlight">
+            <pre><code><span class="nc">List</span><span class="o">&lt;</span><span class="nc">Member</span><span class="o">&gt;</span> <span class="n">memberList</span> <span class="o">=</span> <span class="nc">List</span><span class="o">.</span><span class="na">of</span><span class="o">(</span>
+  <span class="k">new</span> <span class="nf">Member</span><span class="o">(</span><span class="s">"佐々木久美"</span><span class="o">,</span> <span class="mi">27</span><span class="o">),</span>
+  <span class="k">new</span> <span class="nf">Member</span><span class="o">(</span><span class="s">"金村美玖"</span><span class="o">,</span> <span class="mi">20</span><span class="o">),</span>
+  <span class="k">new</span> <span class="nf">Member</span><span class="o">(</span><span class="s">"髙橋未来虹"</span><span class="o">,</span> <span class="mi">19</span><span class="o">),</span>
+  <span class="k">new</span> <span class="nf">Member</span><span class="o">(</span><span class="s">"正源寺陽子"</span><span class="o">,</span> <span class="mi">16</span><span class="o">)</span>
+<span class="o">);</span>
+
+<span class="c1">// Streamを生成</span>
+<span class="nc">Stream</span><span class="o">&lt;</span><span class="nc">Member</span><span class="o">&gt;</span> <span class="n">stream</span> <span class="o">=</span> <span class="n">memberList</span><span class="o">.</span><span class="na">stream</span><span class="o">();</span>
+</code></pre>
+          </div>
+        </div>
+        <p>
+          配列から<code>Stream</code>を作る場合は、<code>java.util.Arrays</code>クラスの<code>stream()</code>メソッドを利用します。
+        </p>
+        <div class="code-frame" data-lang="java">
+          <div class="code-lang"><span class="bold">配列からStreamを生成</span></div>
+          <div class="highlight">
+            <pre><code><span class="nc">Member</span><span class="o">[]</span> <span class="n">members</span> <span class="o">=</span> <span class="o">{</span>
+  <span class="k">new</span> <span class="nf">Member</span><span class="o">(</span><span class="s">"佐々木久美"</span><span class="o">,</span> <span class="mi">27</span><span class="o">),</span>
+  <span class="k">new</span> <span class="nf">Member</span><span class="o">(</span><span class="s">"金村美玖"</span><span class="o">,</span> <span class="mi">20</span><span class="o">),</span>
+  <span class="k">new</span> <span class="nf">Member</span><span class="o">(</span><span class="s">"髙橋未来虹"</span><span class="o">,</span> <span class="mi">19</span><span class="o">),</span>
+  <span class="k">new</span> <span class="nf">Member</span><span class="o">(</span><span class="s">"正源寺陽子"</span><span class="o">,</span> <span class="mi">16</span><span class="o">)</span>
+<span class="o">};</span>
+
+<span class="c1">// Streamを生成</span>
+<span class="nc">Stream</span><span class="o">&lt;</span><span class="nc">Member</span><span class="o">&gt;</span> <span class="n">stream</span> <span class="o">=</span> <span class="nc">Arrays</span><span class="o">.</span><span class="na">stream</span><span class="o">(</span><span class="n">members</span><span class="o">);</span>
+</code></pre>
+          </div>
+        </div>
+        <h2>
+          <span id="中間操作" class="fragment"></span><a href="#%E4%B8%AD%E9%96%93%E6%93%8D%E4%BD%9C"><i
+              class="fa fa-link"></i></a>中間操作
+        </h2>
+        <p>
+          中間操作は、生成した<code>Stream</code>に対する要素の抽出や変換を行うメソッドです。中間操作は、0回以上行うことができます。</p>
+        <p>特によく使う中間操作は、<code>filter()</code>と<code>map()</code>です。</p>
+        <h3>
+          <span id="要素の抽出" class="fragment"></span><a href="#%E8%A6%81%E7%B4%A0%E3%81%AE%E6%8A%BD%E5%87%BA"><i
+              class="fa fa-link"></i></a>要素の抽出
+        </h3>
+        <p>要素の抽出を行えるのは<code>filter()</code>メソッドです。</p>
+        <div class="code-frame" data-lang="java">
+          <div class="highlight">
+            <pre><code><span class="c1">// １８歳以上のメンバーのみを抽出したStreamを作成</span>
+<span class="nc">Stream</span><span class="o">&lt;</span><span class="nc">Member</span><span class="o">&gt;</span> <span class="n">filterredStream</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="na">filter</span><span class="o">(</span><span class="n">member</span> <span class="o">-&gt;</span> <span class="n">member</span><span class="o">.</span><span class="na">age</span><span class="o">()</span> <span class="o">&gt;=</span> <span class="mi">18</span><span class="o">);</span>
+</code></pre>
+          </div>
+        </div>
+        <p><code>filter()</code>の引数はラムダ式になっているので、これは関数型インタフェースのはずです。</p>
+        <p><a
+            href="https://docs.oracle.com/javase/jp/17/docs/api/java.base/java/util/stream/Stream.html#filter(java.util.function.Predicate)"
+            rel="nofollow noopener"
+            target="_blank"><code>filter()</code>のメソッド定義</a>を見ると、引数の型は<code>java.util.function.Predicate</code>になっています。これは、抽象メソッドが<code>boolean test(T t)</code>のみの関数型インタフェースです。
+        </p>
+        <p>
+          今回の場合は<code>T</code>が<code>Member</code>になっていると考えてください。つまり、このメソッドは<code>Member</code>を引数にとって<code>boolean</code>を返します。今回では<code>member.age() &gt;= 18</code>（つまり年齢が18歳以上なら<code>true</code>）を返しています。
+        </p>
+        <h3>
+          <span id="要素の型変換" class="fragment"></span><a href="#%E8%A6%81%E7%B4%A0%E3%81%AE%E5%9E%8B%E5%A4%89%E6%8F%9B"><i
+              class="fa fa-link"></i></a>要素の型変換
+        </h3>
+        <p>要素の型変換を行えるのは<code>map()</code>メソッドです。</p>
+        <div class="code-frame" data-lang="java">
+          <div class="highlight">
+            <pre><code><span class="c1">// メンバー（Member）のStreamから、名前（String）のStreamに変換</span>
+<span class="nc">Stream</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">&gt;</span> <span class="n">mappedStream</span> <span class="o">=</span> <span class="n">filterredStream</span><span class="o">.</span><span class="na">map</span><span class="o">(</span><span class="n">member</span> <span class="o">-&gt;</span> <span class="n">member</span><span class="o">.</span><span class="na">name</span><span class="o">());</span>
+</code></pre>
+          </div>
+        </div>
+        <p><code>map()</code>の引数はラムダ式になっているので、これは関数型インタフェースのはずです。</p>
+        <p><a
+            href="https://docs.oracle.com/javase/jp/17/docs/api/java.base/java/util/stream/Stream.html#map(java.util.function.Function)"
+            rel="nofollow noopener"
+            target="_blank"><code>map()</code>のメソッド定義</a>を見ると、引数の型は<code>java.util.function.Function</code>になっています。これは、抽象メソッドが<code>R apply(T t)</code>のみの関数型インタフェースです。
+        </p>
+        <p>
+          今回の場合は<code>T</code>が<code>Member</code>・<code>R</code>が<code>String</code>になっていると考えてください。つまり、このメソッドは<code>Member</code>を引数にとって<code>String</code>を返します。今回では<code>member.name()</code>（つまりメンバーの名前）を返しています。
+        </p>
+        <h3>
+          <span id="その他の中間操作" class="fragment"></span><a
+            href="#%E3%81%9D%E3%81%AE%E4%BB%96%E3%81%AE%E4%B8%AD%E9%96%93%E6%93%8D%E4%BD%9C"><i
+              class="fa fa-link"></i></a>その他の中間操作
+        </h3>
+        <p>中間操作は他にもたくさんあります。詳細は<a
+            href="https://docs.oracle.com/javase/jp/17/docs/api/java.base/java/util/stream/Stream.html"
+            rel="nofollow noopener" target="_blank"><code>Stream</code>のJavadoc</a>をご確認ください。</p>
+        <h2>
+          <span id="終端操作" class="fragment"></span><a href="#%E7%B5%82%E7%AB%AF%E6%93%8D%E4%BD%9C"><i
+              class="fa fa-link"></i></a>終端操作
+        </h2>
+        <p>
+          終端操作は、<code>Stream</code>を最終目的となる型（<code>List</code>など）に変換するメソッドです。終端操作は、1回のみ行うことができます。</p>
+        <h3>
+          <span id="listへの変換" class="fragment"></span><a href="#list%E3%81%B8%E3%81%AE%E5%A4%89%E6%8F%9B"><i
+              class="fa fa-link"></i></a><code>List</code>への変換
+        </h3>
+        <p>
+          <code>Stream</code>から<code>List</code>への型変換を行えるのは<code>toList()</code>メソッドです。
+        </p>
+        <div class="code-frame" data-lang="java">
+          <div class="highlight">
+            <pre><code><span class="nc">Stream</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">&gt;</span> <span class="n">mappedStream</span> <span class="o">=</span> <span class="o">...;</span>
+<span class="c1">// Listに変換する終端操作</span>
+<span class="nc">List</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">&gt;</span> <span class="n">resultList</span> <span class="o">=</span> <span class="n">mappedStream</span><span class="o">.</span><span class="na">toList</span><span class="o">();</span>
+</code></pre>
+          </div>
+        </div>
+        <p>
+          ちなみに、この<code>resultList</code>はイミュータブル（不変）です。例えば、この後に<code>resultList.add("平尾帆夏")</code>とすると例外がスローされます。
+        </p>
+        <blockquote>
+          <p><code>toList()</code>メソッドはJava
+            16で導入されました。それより前のバージョンのJavaを使っている場合は<code>mappedStream.collect(Collectors.toList())</code>と書く必要があります。ただしこの場合、戻り値の<code>List</code>がミュータブル（可変）になります。
+          </p>
+        </blockquote>
+        <h3>
+          <span id="その他の終端操作" class="fragment"></span><a
+            href="#%E3%81%9D%E3%81%AE%E4%BB%96%E3%81%AE%E7%B5%82%E7%AB%AF%E6%93%8D%E4%BD%9C"><i
+              class="fa fa-link"></i></a>その他の終端操作
+        </h3>
+        <p>終端操作は他にもたくさんあります。詳細は<a
+            href="https://docs.oracle.com/javase/jp/17/docs/api/java.base/java/util/stream/Stream.html"
+            rel="nofollow noopener" target="_blank"><code>Stream</code>のJavadoc</a>をご確認ください。</p>
+        <h2>
+          <span id="メソッドチェーンでの書き方" class="fragment"></span><a
+            href="#%E3%83%A1%E3%82%BD%E3%83%83%E3%83%89%E3%83%81%E3%82%A7%E3%83%BC%E3%83%B3%E3%81%A7%E3%81%AE%E6%9B%B8%E3%81%8D%E6%96%B9"><i
+              class="fa fa-link"></i></a>メソッドチェーンでの書き方
+        </h2>
+        <p>
+          ここまでは、<code>Stream</code>の生成・要素の抽出・要素の変換・<code>List</code>への変換をすべて1行ずつ書いていました。</p>
+        <div class="code-frame" data-lang="java">
+          <div class="code-lang"><span class="bold">1行ずつ書く場合</span></div>
+          <div class="highlight">
+            <pre><code><span class="c1">// 元のList</span>
+<span class="nc">List</span><span class="o">&lt;</span><span class="nc">Member</span><span class="o">&gt;</span> <span class="n">memberList</span> <span class="o">=</span> <span class="o">...;</span>
+<span class="c1">// Streamを生成</span>
+<span class="nc">Stream</span><span class="o">&lt;</span><span class="nc">Member</span><span class="o">&gt;</span> <span class="n">stream</span> <span class="o">=</span> <span class="n">memberList</span><span class="o">.</span><span class="na">stream</span><span class="o">();</span>
+<span class="c1">// 要素を抽出</span>
+<span class="nc">Stream</span><span class="o">&lt;</span><span class="nc">Member</span><span class="o">&gt;</span> <span class="n">filterredStream</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="na">filter</span><span class="o">(</span><span class="n">member</span> <span class="o">-&gt;</span> <span class="n">member</span><span class="o">.</span><span class="na">age</span><span class="o">()</span> <span class="o">&gt;=</span> <span class="mi">18</span><span class="o">);</span>
+<span class="c1">// 要素を変換</span>
+<span class="nc">Stream</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">&gt;</span> <span class="n">mappedStream</span> <span class="o">=</span> <span class="n">filterredStream</span><span class="o">.</span><span class="na">map</span><span class="o">(</span><span class="n">member</span> <span class="o">-&gt;</span> <span class="n">member</span><span class="o">.</span><span class="na">name</span><span class="o">());</span>
+<span class="c1">// List&lt;String&gt;に変換</span>
+<span class="nc">List</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">&gt;</span> <span class="n">resultList</span> <span class="o">=</span> <span class="n">mappedStream</span><span class="o">.</span><span class="na">toList</span><span class="o">();</span>
+</code></pre>
+          </div>
+        </div>
+        <p>
+          しかし、実際によく使うのはメソッドチェーンでの書き方です。すなわち、メソッドの戻り値をいちいち変数に代入せずに、<code>.</code>でつなぎます。</p>
+        <div class="code-frame" data-lang="java">
+          <div class="code-lang"><span class="bold">メソッドチェーンで書く場合</span></div>
+          <div class="highlight">
+            <pre><code><span class="c1">// 元のList</span>
+<span class="nc">List</span><span class="o">&lt;</span><span class="nc">Member</span><span class="o">&gt;</span> <span class="n">memberList</span> <span class="o">=</span> <span class="o">...;</span>
+<span class="c1">// メソッドチェーンで記述</span>
+<span class="nc">List</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">&gt;</span> <span class="n">resultList</span> <span class="o">=</span> <span class="n">memberList</span><span class="o">.</span><span class="na">stream</span><span class="o">()</span>  <span class="c1">// Streamを生成</span>
+  <span class="o">.</span><span class="na">filter</span><span class="o">(</span><span class="n">member</span> <span class="o">-&gt;</span> <span class="n">member</span><span class="o">.</span><span class="na">age</span><span class="o">()</span> <span class="o">&gt;=</span> <span class="mi">18</span><span class="o">)</span>  <span class="c1">// 要素を抽出</span>
+  <span class="o">.</span><span class="na">map</span><span class="o">(</span><span class="n">member</span> <span class="o">-&gt;</span> <span class="n">member</span><span class="o">.</span><span class="na">name</span><span class="o">())</span>  <span class="c1">// 要素を変換</span>
+  <span class="o">.</span><span class="na">toList</span><span class="o">();</span>  <span class="c1">// List&lt;String&gt;に変換</span>
+</code></pre>
+          </div>
+        </div>
+        <p>
+          最初に学習する段階では、<code>List&lt;Member&gt;</code>→<code>Stream&lt;Member&gt;</code>→<code>Stream&lt;String&gt;</code>→<code>List&lt;String&gt;</code>の型変換が分かりやすいように、1行ずつ変数に代入することをおすすめします。理解が進んできたら、メソッドチェーンで書きましょう。もちろん、実務ではメソッドチェーンの利用をおすすめします。
+        </p>
+      </div>
+    </div>
+  </section>
+</body>
+
+</html>

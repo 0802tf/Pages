@@ -1,0 +1,1998 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Gradle入門</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no,viewport-fit=cover">
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.1/github-markdown.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+</head>
+
+<body class="markdown-body">
+  <div>
+    <h1>Gradle入門</h1>
+    <ul>
+      <li><a href="/tags/groovy">Groovy</a></li>
+      <li><a href="/tags/gradle">gradle</a></li>
+      <li><a href="/tags/%e5%85%a5%e9%96%80">入門</a></li>
+    </ul>
+  </div>
+  <h1>
+    <span id="本稿の対象者" class="fragment"></span><a href="#%E6%9C%AC%E7%A8%BF%E3%81%AE%E5%AF%BE%E8%B1%A1%E8%80%85"><i
+        class="fa fa-link"></i></a>本稿の対象者
+  </h1>
+
+  <p>本稿は Gradle の入門記事です。</p>
+
+  <ul>
+    <li>そもそも Gradle って？</li>
+    <li>apply や compile って実はメソッドなんです。</li>
+    <li>{} は単なるスコープではなくクロージャなんです。</li>
+    <li>x = '10' は書けないけど、def y = '10' は書ける。</li>
+    <li>でも version = '1.0' などは書ける。</li>
+    <li>これらは Groovy 言語の構文が基本となっている。</li>
+    <li>そもそも Groovy って？</li>
+    <li>自身でタスクやプラグインを作ることもできる。</li>
+  </ul>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">build.gradle</span></div>
+    <div class="highlight">
+      <pre><code><span class="n">apply</span> <span class="nl">plugin:</span> <span class="s1">'java'</span>
+<span class="n">apply</span> <span class="nl">plugin:</span> <span class="s1">'application'</span>
+
+<span class="n">repositories</span> <span class="o">{</span>
+    <span class="n">jcenter</span><span class="o">()</span>
+<span class="o">}</span>
+
+<span class="n">dependencies</span> <span class="o">{</span>
+    <span class="n">compile</span> <span class="s1">'com.google.guava:guava:22.0'</span>
+    <span class="n">testCompile</span> <span class="s1">'junit:junit:4.12'</span>
+<span class="o">}</span>
+
+<span class="n">mainClassName</span> <span class="o">=</span> <span class="s1">'App'</span>
+</code></pre>
+    </div>
+  </div>
+
+  <h1>
+    <span id="概要" class="fragment"></span><a href="#%E6%A6%82%E8%A6%81"><i class="fa fa-link"></i></a>概要
+  </h1>
+
+  <p>Gradle (ぐれいどる) は作成したプログラムをビルド(コンパイル／テスト／実行／パッケージング／配布)するために利用します。有名なビルドツールに Maven がありますが、Gradle は
+    Maven のように XML で設定定義するのではなく Java 言語によく似た構文である Groovy 言語を利用して、プログラマブルにビルド定義ができプログラマと親和性が高いです。</p>
+
+  <p>Android 開発では標準のビルドツールですし、私も新たに作るプログラムは全て Gradle で作るようにしています。<br>
+    Gradle 自身も Java と Groovy で作成され Gradle によりビルドされています。OSS として公開( <a href="https://github.com/gradle/gradle"
+      class="autolink" rel="nofollow noopener" target="_blank">https://github.com/gradle/gradle</a> )されています。</p>
+
+  <p>JVM(Java 仮想マシン)上で動作するため、基本的にどのような環境でも動作させることができます。</p>
+
+  <h1>
+    <span id="セットアップ" class="fragment"></span><a href="#%E3%82%BB%E3%83%83%E3%83%88%E3%82%A2%E3%83%83%E3%83%97"><i
+        class="fa fa-link"></i></a>セットアップ
+  </h1>
+
+  <h2>
+    <span id="前提" class="fragment"></span><a href="#%E5%89%8D%E6%8F%90"><i class="fa fa-link"></i></a>前提
+  </h2>
+
+  <ul>
+    <li>(2018/02/04 時点) Java SE 7 以上が導入されていること。
+      ※ 前述のとおり、Gradle 自身が Java で作成されているため。</li>
+  </ul>
+
+  <h2>
+    <span id="gradle-インストール" class="fragment"></span><a
+      href="#gradle-%E3%82%A4%E3%83%B3%E3%82%B9%E3%83%88%E3%83%BC%E3%83%AB"><i class="fa fa-link"></i></a>Gradle
+    インストール
+  </h2>
+
+  <ol>
+    <li>
+      <a href="https://gradle.org/" class="autolink" rel="nofollow noopener" target="_blank">https://gradle.org/</a>
+      へアクセスする
+    </li>
+    <li>
+      <p>「Install Manually」を押下する<br>
+        <a href="https://camo.qiitausercontent.com/48854ccdd9234e6628178fdc20acb84646d1d0b4/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f35303033322f62343564363365622d663563652d306263392d326363382d6333356461653334396638342e706e67"
+          target="_blank" rel="nofollow noopener"><img
+            src="https://qiita-user-contents.imgix.net/https%3A%2F%2Fqiita-image-store.s3.amazonaws.com%2F0%2F50032%2Fb45d63eb-f5ce-0bc9-2cc8-c35dae349f84.png?ixlib=rb-4.0.0&amp;auto=format&amp;gif-q=60&amp;q=75&amp;s=26291623aa5bdaf6a6eb94e3f60e18c9"
+            width="50%"
+            srcset="https://qiita-user-contents.imgix.net/https%3A%2F%2Fqiita-image-store.s3.amazonaws.com%2F0%2F50032%2Fb45d63eb-f5ce-0bc9-2cc8-c35dae349f84.png?ixlib=rb-4.0.0&amp;auto=format&amp;gif-q=60&amp;q=75&amp;w=1400&amp;fit=max&amp;s=e016468b9c13d8fb97bdb92175218e5b 1x"
+            loading="lazy"></a>
+      </p>
+    </li>
+    <li>
+      <p>「Install Gradle」を押下する<br>
+        <a href="https://camo.qiitausercontent.com/033faf506478158aebfd0db782889db40c602a8d/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f35303033322f62313565623732372d353435322d626433352d383531662d3933313064666161663937622e706e67"
+          target="_blank" rel="nofollow noopener"><img
+            src="https://qiita-user-contents.imgix.net/https%3A%2F%2Fqiita-image-store.s3.amazonaws.com%2F0%2F50032%2Fb15eb727-5452-bd35-851f-9310dfaaf97b.png?ixlib=rb-4.0.0&amp;auto=format&amp;gif-q=60&amp;q=75&amp;s=5664263145be6a42b6f639fc13db47bb"
+            width="50%"
+            srcset="https://qiita-user-contents.imgix.net/https%3A%2F%2Fqiita-image-store.s3.amazonaws.com%2F0%2F50032%2Fb15eb727-5452-bd35-851f-9310dfaaf97b.png?ixlib=rb-4.0.0&amp;auto=format&amp;gif-q=60&amp;q=75&amp;w=1400&amp;fit=max&amp;s=26eca354b77d143ee990cee7228b03bf 1x"
+            loading="lazy"></a>
+      </p>
+    </li>
+    <li>
+      <p>「<a href="https://gradle.org/releases/" rel="nofollow noopener" target="_blank">Download</a>」リンクを押下する<br>
+        <a href="https://camo.qiitausercontent.com/1fad2c69b8bd983611bf6724068844ca7c3a7bc2/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f35303033322f30393133366531322d363663612d306464612d613836642d3531653262386335376137652e706e67"
+          target="_blank" rel="nofollow noopener"><img
+            src="https://qiita-user-contents.imgix.net/https%3A%2F%2Fqiita-image-store.s3.amazonaws.com%2F0%2F50032%2F09136e12-66ca-0dda-a86d-51e2b8c57a7e.png?ixlib=rb-4.0.0&amp;auto=format&amp;gif-q=60&amp;q=75&amp;s=923bdf74c61bf0ad5d45b948d2f5426e"
+            width="50%"
+            srcset="https://qiita-user-contents.imgix.net/https%3A%2F%2Fqiita-image-store.s3.amazonaws.com%2F0%2F50032%2F09136e12-66ca-0dda-a86d-51e2b8c57a7e.png?ixlib=rb-4.0.0&amp;auto=format&amp;gif-q=60&amp;q=75&amp;w=1400&amp;fit=max&amp;s=0fba7106a26855ce161f74f2ea3cd56d 1x"
+            loading="lazy"></a>
+      </p>
+    </li>
+    <li>
+      <p>「binary-only」リンクを押下する<br>
+        <a href="https://camo.qiitausercontent.com/21084e1893e644627b8cdcefb32f14952b448a39/68747470733a2f2f71696974612d696d6167652d73746f72652e73332e616d617a6f6e6177732e636f6d2f302f35303033322f39373662613230312d663730612d333630332d623665312d3435333662306161336165372e706e67"
+          target="_blank" rel="nofollow noopener"><img
+            src="https://qiita-user-contents.imgix.net/https%3A%2F%2Fqiita-image-store.s3.amazonaws.com%2F0%2F50032%2F976ba201-f70a-3603-b6e1-4536b0aa3ae7.png?ixlib=rb-4.0.0&amp;auto=format&amp;gif-q=60&amp;q=75&amp;s=cd9f81247a8a14ffb6159d6dcdab0376"
+            width="50%"
+            srcset="https://qiita-user-contents.imgix.net/https%3A%2F%2Fqiita-image-store.s3.amazonaws.com%2F0%2F50032%2F976ba201-f70a-3603-b6e1-4536b0aa3ae7.png?ixlib=rb-4.0.0&amp;auto=format&amp;gif-q=60&amp;q=75&amp;w=1400&amp;fit=max&amp;s=6cf62aee150939040dc47c35db178b27 1x"
+            loading="lazy"></a>
+      </p>
+    </li>
+    <li>
+      <p>Gradle を配置し、PATH を通す</p>
+    </li>
+  </ol>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">ターミナル</span></div>
+    <div class="highlight">
+      <pre><code><span class="c"># ダウンロードした zip ファイルを解凍し、任意の場所へ配置する。(私は /usr/local/ に配置してシンボリックを作成しています。)</span>
+<span class="nv">$ </span><span class="nb">cd</span> ~/Downloads
+<span class="nv">$ </span>unzip gradle-4.5-bin.zip
+<span class="nv">$ </span><span class="nb">mv </span>gradle-4.5 /usr/local/
+<span class="nv">$ </span><span class="nb">ln</span> <span class="nt">-snf</span> /usr/local/gradle-4.5 /usr/local/gradle
+
+<span class="c"># ${GRADLE_HOME}/bin を PATH を通す</span>
+<span class="nv">$ </span>vi ~/.bash_profile
+...
+<span class="nv">GRADLE_HOME</span><span class="o">=</span>/usr/local/gradle
+<span class="nb">export </span><span class="nv">PATH</span><span class="o">=</span><span class="k">${</span><span class="nv">GRADLE_HOME</span><span class="k">}</span>/bin:<span class="nv">$PATH</span>
+...
+
+<span class="c"># 設定した PATH を有効化</span>
+<span class="nv">$ </span><span class="nb">.</span> ~/.bash_profile
+<span class="nv">$ </span><span class="nb">echo</span> <span class="k">${</span><span class="nv">PATH</span><span class="k">}</span>
+</code></pre>
+    </div>
+  </div>
+
+  <h3>
+    <span id="gradle-動作確認" class="fragment"></span><a href="#gradle-%E5%8B%95%E4%BD%9C%E7%A2%BA%E8%AA%8D"><i
+        class="fa fa-link"></i></a>Gradle 動作確認
+  </h3>
+
+  <p>gradle -v コマンドを実行し、下記のようにバージョン情報が出力されればOKです。</p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">ターミナル</span></div>
+    <div class="highlight">
+      <pre><code><span class="nv">$ </span>gradle <span class="nt">-v</span>
+
+<span class="nt">------------------------------------------------------------</span>
+Gradle 4.5
+<span class="nt">------------------------------------------------------------</span>
+
+Build <span class="nb">time</span>:   2018-01-24 17:04:52 UTC
+Revision:     77d0ec90636f43669dc794ca17ef80dd65457bec
+
+Groovy:       2.4.12
+Ant:          Apache Ant<span class="o">(</span>TM<span class="o">)</span> version 1.9.9 compiled on February 2 2017
+JVM:          9 <span class="o">(</span>Oracle Corporation 9+181<span class="o">)</span>
+OS:           Mac OS X 10.11.6 x86_64
+</code></pre>
+    </div>
+  </div>
+
+  <h1>
+    <span id="gradle-wrapper" class="fragment"></span><a href="#gradle-wrapper"><i class="fa fa-link"></i></a>Gradle
+    Wrapper
+  </h1>
+
+  <p>Gradle のインストール手順を紹介しましたが、プロジェクトに参加する開発者全員がこの手順を行うなると結構な手間になります。<br>
+    そこで、最初の一人が Gradle のセットアップを行い、Gradle Wrapper を準備しておきます。残りのメンバーはこの Gradle Wrapper を使うことで、Gradle
+    が自動的にダウンロードされ、Gradle のコマンドを実行できるようになります。</p>
+
+  <p>先程のコマンドを Gradle Wrapper で行うと下記となります。</p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">ターミナル</span></div>
+    <div class="highlight">
+      <pre><code><span class="c"># Windows の場合は gradlew -v でOK</span>
+<span class="nv">$ </span>./gradlew <span class="nt">-v</span>
+</code></pre>
+    </div>
+  </div>
+
+  <p>初回実行時は、Gradle をダウンロードするため時間がかかりますが、2回目以降は素早く実行可能です。<br>
+    ※以降の手順は基本的に Gradle Wrapper での手順を記載します。</p>
+
+  <p>Gradle Wrapper は下記のコマンドで生成することができます。</p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">ターミナル</span></div>
+    <div class="highlight">
+      <pre><code><span class="nv">$ </span>gradle wrapper
+<span class="nv">$ </span><span class="nb">ls
+</span>gradle      gradlew     gradlew.bat
+</code></pre>
+    </div>
+  </div>
+
+  <p>この gradlew や gradlew.bat というファイルが Gradle Wrapper です。</p>
+
+  <h1>
+    <span id="本稿確認用リポジトリ" class="fragment"></span><a
+      href="#%E6%9C%AC%E7%A8%BF%E7%A2%BA%E8%AA%8D%E7%94%A8%E3%83%AA%E3%83%9D%E3%82%B8%E3%83%88%E3%83%AA"><i
+        class="fa fa-link"></i></a>本稿確認用リポジトリ
+  </h1>
+
+  <p>事前に Gradle Wrapper を設定してあるリポジトリを用意していますので<br>
+    こちらを clone してください。</p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">ターミナル</span></div>
+    <div class="highlight">
+      <pre><code><span class="nv">$ </span><span class="nb">mkdir</span> ~/java
+<span class="nv">$ </span><span class="nb">cd</span> ~/java
+<span class="nv">$ </span>git clone https://github.com/hatimiti/GradleInit samplepj
+<span class="nv">$ </span><span class="nb">cd </span>samplepj
+</code></pre>
+    </div>
+  </div>
+
+  <h1>
+    <span id="hello-gradle" class="fragment"></span><a href="#hello-gradle"><i class="fa fa-link"></i></a>Hello
+    Gradle
+  </h1>
+
+  <p>「gradle init」コマンドを実行すると、引数で指定したタイプのプロジェクトの雛形を作成することができます。</p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">ターミナル</span></div>
+    <div class="highlight">
+      <pre><code><span class="c"># gradle init --type ＜TYPE＞</span>
+<span class="c"># ＜TYPE＞</span>
+<span class="c"># * 'basic'</span>
+<span class="c"># * 'groovy-application'</span>
+<span class="c"># * 'groovy-library'</span>
+<span class="c"># * 'java-application'</span>
+<span class="c"># * 'java-library'</span>
+<span class="c"># * 'pom'</span>
+<span class="c"># * 'scala-library'</span>
+<span class="nv">$ </span>./gradlew init <span class="nt">--type</span> java-application
+
+<span class="nv">$ </span>tree
+~/java/samplepj
+|--.gradle
+|--build.gradle
+|--gradle
+|  |--wrapper
+|  |  |--gradle-wrapper.jar
+|  |  |--gradle-wrapper.properties
+|--gradlew
+|--gradlew.bat
+|--settings.gradle
+|--src
+|  |--main
+|  |  |--java
+|  |  |  |--App.java
+|  |--test
+|  |  |--java
+|  |  |  |--AppTest.java
+</code></pre>
+    </div>
+  </div>
+
+  <p>「build.gradle」ファイルが Gradle によるビルド定義の中心となるファイルです。<br>
+    このファイルに依存関係やタスクを定義します。<br>
+    Maven でいうところの pom.xml にあたります。</p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">build.gradle(コメント省略)</span></div>
+    <div class="highlight">
+      <pre><code><span class="n">plugins</span> <span class="o">{</span>
+    <span class="n">id</span> <span class="s1">'java'</span>
+    <span class="n">id</span> <span class="s1">'application'</span>
+<span class="o">}</span>
+
+<span class="n">mainClassName</span> <span class="o">=</span> <span class="s1">'App'</span>
+
+<span class="n">dependencies</span> <span class="o">{</span>
+    <span class="n">compile</span> <span class="s1">'com.google.guava:guava:23.0'</span>
+    <span class="n">testCompile</span> <span class="s1">'junit:junit:4.12'</span>
+<span class="o">}</span>
+
+<span class="n">repositories</span> <span class="o">{</span>
+    <span class="n">jcenter</span><span class="o">()</span>
+<span class="o">}</span>
+</code></pre>
+    </div>
+  </div>
+
+  <p>Gradle の実行は「gradle &lt;タスク名1&gt; &lt;タスク名2&gt; ...」のように、実行したい<strong>タスク</strong>を連ねます。<br>
+    下記の例では clean タスク、build タスク、run タスクを実行します。</p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">ターミナル</span></div>
+    <div class="highlight">
+      <pre><code><span class="nv">$ </span>./gradlew clean build run
+
+<span class="o">&gt;</span> Task :run
+Hello world.
+</code></pre>
+    </div>
+  </div>
+
+  <h1>
+    <span id="java-と-groovy-の比較" class="fragment"></span><a href="#java-%E3%81%A8-groovy-%E3%81%AE%E6%AF%94%E8%BC%83"><i
+        class="fa fa-link"></i></a>Java と
+    Groovy の比較
+  </h1>
+
+  <p>build.gradle ファイルは Groovy で記述します。Groovy の省略記法やクロージャについて知ることで、build.gradle の記法が理解しやすくなります。<br>
+    Groovy は Java の構文を基本的に踏襲しています。<br>
+    ここでは Java プログラマ目線で、Groovy と Java で異なる部分を一部紹介したいと思います。</p>
+
+  <p>Groovy は groovyc コマンドでコンパイルし、.class ファイルへ変換も可能ですが、スクリプト言語としてコンパイルせずに動的実行が可能です．また、動的型付言語のため、def
+    キーワードにより型宣言の省略や、ダックタイピングも可能です。</p>
+
+  <h2>
+    <span id="groovy-文法" class="fragment"></span><a href="#groovy-%E6%96%87%E6%B3%95"><i
+        class="fa fa-link"></i></a>Groovy 文法
+  </h2>
+
+  <p>下記のコードを build.gradle に記述してください。<br>
+    実際の Groovy ファイルの拡張子は .groovy ですが、ここでは Gradle のビルドスクリプトとして実行してみます。<br>
+    これにより、build.gradle が Groovy で記述できることが実感できると思います。</p>
+
+  <p>コード下部に Point クラスを定義しているので、そちらを先に確認すると良いと思います。</p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">build.gradle</span></div>
+    <div class="highlight">
+      <pre><code><span class="kn">import</span> <span class="nn">groovy.transform.ToString</span>
+<span class="kn">import</span> <span class="nn">groovy.transform.EqualsAndHashCode</span>
+
+<span class="cm">/*: デフォルトで import 済のパッケージ
+import java.io.*
+import java.lang.*
+import java.math.BigDecimal
+import java.math.BigInteger
+import java.net.*
+import java.util.*
+import groovy.lang.*
+import groovy.util.*
+*/</span>
+
+<span class="c1">// 末尾のセミコロン省略可能</span>
+<span class="n">Point</span> <span class="n">a</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Point</span><span class="o">(</span><span class="mi">10</span><span class="o">,</span> <span class="mi">20</span><span class="o">)</span>
+<span class="n">Point</span> <span class="n">b</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Point</span><span class="o">(</span><span class="mi">3</span><span class="o">,</span> <span class="mi">4</span><span class="o">)</span>
+
+<span class="c1">// 特定の名前のメソッドは演算子記号で呼び出し可能</span>
+<span class="k">assert</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span>  <span class="o">==</span> <span class="k">new</span> <span class="n">Point</span><span class="o">(</span><span class="mi">13</span><span class="o">,</span> <span class="mi">24</span><span class="o">)</span>  <span class="c1">// a.plus(b);</span>
+<span class="k">assert</span> <span class="n">a</span> <span class="o">-</span> <span class="n">b</span>  <span class="o">==</span> <span class="k">new</span> <span class="n">Point</span><span class="o">(</span><span class="mi">7</span><span class="o">,</span> <span class="mi">16</span><span class="o">)</span>   <span class="c1">// a.minus(b);</span>
+<span class="k">assert</span> <span class="n">a</span> <span class="o">*</span> <span class="n">b</span>  <span class="o">==</span> <span class="k">new</span> <span class="n">Point</span><span class="o">(</span><span class="mi">30</span><span class="o">,</span> <span class="mi">80</span><span class="o">)</span>  <span class="c1">// a.multiply(b);</span>
+<span class="k">assert</span> <span class="n">a</span> <span class="s">/ b  == new Point(3, 5)    /</span><span class="c1">//a.divide(b);</span>
+<span class="k">assert</span> <span class="n">a</span><span class="o">++</span>    <span class="o">==</span> <span class="k">new</span> <span class="n">Point</span><span class="o">(</span><span class="mi">11</span><span class="o">,</span> <span class="mi">21</span><span class="o">)</span>  <span class="c1">// a.next();</span>
+<span class="k">assert</span> <span class="n">b</span><span class="o">--</span>    <span class="o">==</span> <span class="k">new</span> <span class="n">Point</span><span class="o">(</span><span class="mi">2</span><span class="o">,</span> <span class="mi">3</span><span class="o">)</span>    <span class="c1">// a.previous();</span>
+<span class="k">assert</span> <span class="n">a</span> <span class="o">&lt;&lt;</span> <span class="n">b</span> <span class="o">==</span> <span class="k">new</span> <span class="n">Point</span><span class="o">(</span><span class="mi">13</span><span class="o">,</span> <span class="mi">24</span><span class="o">)</span>  <span class="c1">// a.leftShift(b);</span>
+
+<span class="c1">// コンストラクタ呼び出しの色々</span>
+<span class="kt">def</span> <span class="n">c</span> <span class="o">=</span> <span class="o">[</span><span class="mi">1</span><span class="o">,</span> <span class="mi">2</span><span class="o">]</span> <span class="k">as</span> <span class="n">Point</span>
+<span class="n">Point</span> <span class="n">d</span> <span class="o">=</span> <span class="o">[</span><span class="mi">3</span><span class="o">,</span> <span class="mi">4</span><span class="o">]</span>
+<span class="n">Point</span> <span class="n">e</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Point</span><span class="o">(</span><span class="nl">x:</span> <span class="mi">5</span><span class="o">,</span> <span class="nl">y:</span> <span class="mi">6</span><span class="o">)</span>
+<span class="k">assert</span> <span class="n">c</span> <span class="o">==</span> <span class="k">new</span> <span class="n">Point</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span> <span class="mi">2</span><span class="o">)</span>
+<span class="k">assert</span> <span class="n">d</span> <span class="o">==</span> <span class="k">new</span> <span class="n">Point</span><span class="o">(</span><span class="mi">3</span><span class="o">,</span> <span class="mi">4</span><span class="o">)</span>
+<span class="k">assert</span> <span class="n">e</span> <span class="o">==</span> <span class="k">new</span> <span class="n">Point</span><span class="o">(</span><span class="mi">5</span><span class="o">,</span> <span class="mi">6</span><span class="o">)</span>
+
+<span class="c1">// メソッド呼び出し時の括弧省略可能</span>
+<span class="kt">def</span> <span class="n">f</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="na">plus</span> <span class="n">b</span>
+<span class="kt">def</span> <span class="n">g</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="na">next</span><span class="o">()</span>
+<span class="c1">//def g = a.next // 引数が無い場合は省略不可</span>
+
+<span class="c1">// メソッドパラメータを Map にすることで、名前付き指定のように呼び出し可能</span>
+<span class="k">assert</span> <span class="n">Point</span><span class="o">.</span><span class="na">of</span><span class="o">(</span><span class="nl">x:</span> <span class="mi">10</span><span class="o">,</span> <span class="nl">y:</span> <span class="mi">20</span><span class="o">)</span> <span class="o">==</span> <span class="k">new</span> <span class="n">Point</span><span class="o">(</span><span class="mi">10</span><span class="o">,</span> <span class="mi">20</span><span class="o">)</span>
+
+<span class="c1">// 宣言時にアクセス修飾子やfinalをつけていないパラメータ以外は getter/setter は自動で生成される</span>
+<span class="n">a</span><span class="o">.</span><span class="na">setX</span><span class="o">(</span><span class="mi">15</span><span class="o">)</span>
+<span class="n">a</span><span class="o">.</span><span class="na">setY</span><span class="o">(</span><span class="mi">30</span><span class="o">)</span>
+<span class="k">assert</span> <span class="n">a</span> <span class="o">==</span> <span class="k">new</span> <span class="n">Point</span><span class="o">(</span><span class="mi">15</span><span class="o">,</span> <span class="mi">30</span><span class="o">)</span>
+
+<span class="c1">// シングルクォートは Charcter or Stirng 型に変換される</span>
+<span class="kt">char</span> <span class="n">s1</span> <span class="o">=</span> <span class="s1">'x'</span><span class="o">;</span>    <span class="k">assert</span> <span class="n">s1</span> <span class="k">instanceof</span> <span class="n">Character</span>
+<span class="kt">def</span>  <span class="n">s2</span> <span class="o">=</span> <span class="s1">'x'</span><span class="o">;</span>    <span class="k">assert</span> <span class="n">s2</span> <span class="k">instanceof</span> <span class="n">String</span>
+<span class="kt">def</span>  <span class="n">s3</span> <span class="o">=</span> <span class="s1">'xy'</span><span class="o">;</span>   <span class="k">assert</span> <span class="n">s3</span> <span class="k">instanceof</span> <span class="n">String</span>
+<span class="c1">// ダブルクォートは String or GString 型</span>
+<span class="kt">def</span> <span class="n">d1</span> <span class="o">=</span> <span class="s2">"x"</span><span class="o">;</span>     <span class="k">assert</span> <span class="n">d1</span> <span class="k">instanceof</span> <span class="n">String</span>
+<span class="kt">def</span> <span class="n">d2</span> <span class="o">=</span> <span class="s2">"xy"</span><span class="o">;</span>    <span class="k">assert</span> <span class="n">d2</span> <span class="k">instanceof</span> <span class="n">String</span>
+<span class="kt">def</span> <span class="n">d3</span> <span class="o">=</span> <span class="s2">"${a}"</span><span class="o">;</span>  <span class="k">assert</span> <span class="n">d3</span> <span class="k">instanceof</span> <span class="n">GString</span>
+<span class="c1">// GString は ${変数} で文字列に値を埋め込み可能。 == は equals で扱われる。</span>
+<span class="k">assert</span> <span class="s2">"a = ${a}"</span> <span class="o">==</span> <span class="s2">"a = Point(15, 30)"</span>
+
+<span class="c1">// """ でマルチライン文字列を生成可能</span>
+<span class="kt">def</span> <span class="n">d4</span> <span class="o">=</span> <span class="s2">"""
+一行目
+二行目
+"""</span><span class="o">;</span>
+<span class="kd">final</span> <span class="kt">def</span> <span class="n">LF</span> <span class="o">=</span> <span class="n">System</span><span class="o">.</span><span class="na">lineSeparator</span><span class="o">()</span>
+<span class="k">assert</span> <span class="n">d4</span> <span class="o">==</span> <span class="s2">"${LF}一行目${LF}二行目${LF}"</span>
+
+<span class="c1">// マルチライン文字列は \ と | と stripMargin() を使うとインデントがキレイにできる。</span>
+<span class="kt">def</span> <span class="n">d5</span> <span class="o">=</span> <span class="s2">"""\
+  |一行目
+  |二行目
+  |"""</span><span class="o">.</span><span class="na">stripMargin</span><span class="o">()</span>
+<span class="k">assert</span> <span class="n">d5</span> <span class="o">==</span> <span class="s2">"一行目${LF}二行目${LF}"</span>
+
+<span class="c1">// Closure(クロージャ)</span>
+<span class="kt">def</span> <span class="n">cl1</span> <span class="o">=</span> <span class="o">{</span>
+  <span class="n">print</span> <span class="s2">"${x}, ${y}"</span>
+<span class="o">}</span>
+<span class="n">a</span><span class="o">.</span><span class="na">execute</span><span class="o">(</span><span class="n">cl1</span><span class="o">)</span>
+
+<span class="c1">// 括弧は省略可能</span>
+<span class="c1">// b.execute({</span>
+<span class="c1">//   print "${x}, ${y}"</span>
+<span class="c1">// })</span>
+<span class="n">b</span><span class="o">.</span><span class="na">execute</span> <span class="o">{</span>
+  <span class="n">print</span> <span class="s2">"${x}, ${y}"</span>
+<span class="o">}</span>
+
+<span class="c1">// 最後の引数が Closure の場合 メソッド名() { ... } の形式で呼び出し可能。</span>
+<span class="c1">// Closureへの引数が1つの場合は it で呼び出し可能。</span>
+<span class="c1">// 省略しない場合は メソッド名() { p -&gt; ... } の形式となる。</span>
+<span class="n">a</span><span class="o">.</span><span class="na">execute</span><span class="o">(</span><span class="n">b</span><span class="o">)</span> <span class="o">{</span>
+  <span class="kt">int</span> <span class="n">_x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">it</span><span class="o">.</span><span class="na">x</span>
+  <span class="kt">int</span> <span class="n">_y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="n">it</span><span class="o">.</span><span class="na">y</span>
+  <span class="n">print</span> <span class="s2">"${_x}, ${_y}"</span>
+<span class="o">}</span>
+
+<span class="c1">// 5678910</span>
+<span class="o">(</span><span class="mi">5</span><span class="o">..</span><span class="mi">10</span><span class="o">).</span><span class="na">each</span> <span class="o">{</span>
+  <span class="n">print</span> <span class="n">it</span>
+<span class="o">}</span>
+<span class="n">println</span> <span class="s2">""</span><span class="o">;</span>
+<span class="c1">// 0123456789</span>
+<span class="o">(</span><span class="mi">10</span><span class="o">).</span><span class="na">times</span> <span class="o">{</span>
+  <span class="n">print</span> <span class="n">it</span>
+<span class="o">}</span>
+<span class="n">println</span> <span class="s2">""</span><span class="o">;</span>
+
+<span class="c1">// List や Map</span>
+
+<span class="kt">def</span> <span class="n">lm1</span> <span class="o">=</span> <span class="o">[</span><span class="mi">1</span><span class="o">,</span> <span class="mi">2</span><span class="o">,</span> <span class="mi">3</span><span class="o">]</span>
+<span class="k">assert</span> <span class="n">lm1</span> <span class="k">instanceof</span> <span class="n">ArrayList</span>
+<span class="k">assert</span> <span class="n">lm1</span><span class="o">.</span><span class="na">sum</span><span class="o">()</span> <span class="o">==</span> <span class="mi">6</span>
+
+<span class="kt">def</span> <span class="n">lm2</span> <span class="o">=</span> <span class="o">[</span><span class="nl">x:</span> <span class="mi">10</span><span class="o">,</span> <span class="nl">y:</span> <span class="mi">11</span><span class="o">,</span> <span class="nl">z:</span> <span class="mi">12</span><span class="o">]</span>
+<span class="k">assert</span> <span class="n">lm2</span> <span class="k">instanceof</span> <span class="n">HashMap</span>
+<span class="k">assert</span> <span class="n">lm2</span><span class="o">[</span><span class="s1">'y'</span><span class="o">]</span> <span class="o">==</span> <span class="mi">11</span>
+
+<span class="c1">// 展開ドット演算子</span>
+<span class="k">assert</span> <span class="n">lm2</span><span class="o">*.</span><span class="na">value</span> <span class="o">==</span> <span class="o">[</span><span class="mi">10</span><span class="o">,</span> <span class="mi">11</span><span class="o">,</span> <span class="mi">12</span><span class="o">]</span>
+<span class="k">assert</span> <span class="n">lm2</span><span class="o">.</span><span class="na">collect</span> <span class="o">{</span> <span class="n">it</span><span class="o">.</span><span class="na">value</span> <span class="o">}</span> <span class="o">==</span> <span class="o">[</span><span class="mi">10</span><span class="o">,</span> <span class="mi">11</span><span class="o">,</span> <span class="mi">12</span><span class="o">]</span>
+
+<span class="cm">/**
+ * The 2D point at x and y.
+ */</span>
+<span class="nd">@ToString</span>
+<span class="nd">@EqualsAndHashCode</span>
+<span class="kd">class</span> <span class="nc">Point</span> <span class="o">{</span>
+  <span class="kt">int</span> <span class="n">x</span><span class="o">;</span>
+  <span class="kt">int</span> <span class="n">y</span><span class="o">;</span>
+
+  <span class="n">Point</span><span class="o">(</span><span class="kt">int</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">0</span><span class="o">,</span> <span class="kt">int</span> <span class="n">y</span> <span class="o">=</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">x</span> <span class="o">=</span> <span class="n">x</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">y</span> <span class="o">=</span> <span class="n">y</span>
+  <span class="o">}</span>
+
+  <span class="n">Point</span> <span class="nf">plus</span><span class="o">(</span><span class="n">Point</span> <span class="n">p</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">p</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="k">return</span> <span class="k">this</span>
+    <span class="k">new</span> <span class="nf">Point</span><span class="o">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">p</span><span class="o">.</span><span class="na">x</span><span class="o">,</span> <span class="n">y</span> <span class="o">+</span> <span class="n">p</span><span class="o">.</span><span class="na">y</span><span class="o">)</span> <span class="c1">// return 省略可: ブロックの最後の式が return される</span>
+  <span class="o">}</span>
+
+  <span class="n">Point</span> <span class="nf">minus</span><span class="o">(</span><span class="n">Point</span> <span class="n">p</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">p</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="k">return</span> <span class="k">this</span>
+    <span class="k">new</span> <span class="nf">Point</span><span class="o">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">p</span><span class="o">.</span><span class="na">x</span><span class="o">,</span> <span class="n">y</span> <span class="o">-</span> <span class="n">p</span><span class="o">.</span><span class="na">y</span><span class="o">)</span>
+  <span class="o">}</span>
+
+  <span class="n">Point</span> <span class="nf">multiply</span><span class="o">(</span><span class="n">Point</span> <span class="n">p</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">p</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="k">return</span> <span class="k">this</span>
+    <span class="k">new</span> <span class="nf">Point</span><span class="o">(</span><span class="n">x</span> <span class="o">*</span> <span class="n">p</span><span class="o">.</span><span class="na">x</span><span class="o">,</span> <span class="n">y</span> <span class="o">*</span> <span class="n">p</span><span class="o">.</span><span class="na">y</span><span class="o">)</span>
+  <span class="o">}</span>
+
+  <span class="n">Point</span> <span class="nf">div</span><span class="o">(</span><span class="n">Point</span> <span class="n">p</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">p</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="k">return</span> <span class="k">this</span>
+    <span class="k">try</span> <span class="o">{</span>
+      <span class="k">new</span> <span class="nf">Point</span><span class="o">(</span><span class="n">x</span> <span class="s">/ p.x as int, y /</span> <span class="n">p</span><span class="o">.</span><span class="na">y</span> <span class="k">as</span> <span class="kt">int</span><span class="o">)</span>
+    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+      <span class="c1">// 検査例外を throw しても呼び出し側の catch 不要</span>
+      <span class="k">throw</span> <span class="k">new</span> <span class="nf">Exception</span><span class="o">(</span><span class="n">e</span><span class="o">)</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+
+  <span class="n">Point</span> <span class="nf">next</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">x</span><span class="o">++</span>
+    <span class="n">y</span><span class="o">++</span>
+    <span class="k">this</span>
+  <span class="o">}</span>
+
+  <span class="n">Point</span> <span class="nf">previous</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">x</span><span class="o">--</span>
+    <span class="n">y</span><span class="o">--</span>
+    <span class="k">this</span>
+  <span class="o">}</span>
+
+  <span class="n">Point</span> <span class="nf">leftShift</span><span class="o">(</span><span class="n">Point</span> <span class="n">p</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">plus</span><span class="o">(</span><span class="n">p</span><span class="o">)</span>
+  <span class="o">}</span>
+
+  <span class="kt">void</span> <span class="nf">execute</span><span class="o">(</span><span class="n">Closure</span> <span class="n">c</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">println</span> <span class="s2">"---"</span>
+    <span class="n">c</span><span class="o">.</span><span class="na">delegate</span> <span class="o">=</span> <span class="k">this</span>
+    <span class="n">c</span><span class="o">()</span>
+    <span class="n">println</span> <span class="s2">""</span>
+    <span class="n">println</span> <span class="s2">"---"</span>
+  <span class="o">}</span>
+
+  <span class="kt">void</span> <span class="nf">execute</span><span class="o">(</span><span class="n">Point</span> <span class="n">p</span><span class="o">,</span> <span class="n">Closure</span> <span class="n">c</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">println</span> <span class="s2">"---"</span>
+    <span class="n">c</span><span class="o">.</span><span class="na">delegate</span> <span class="o">=</span> <span class="k">this</span>
+    <span class="n">c</span><span class="o">(</span><span class="n">p</span><span class="o">)</span>
+    <span class="n">println</span> <span class="s2">""</span>
+    <span class="n">println</span> <span class="s2">"---"</span>
+  <span class="o">}</span>
+
+  <span class="kd">static</span> <span class="n">Point</span> <span class="nf">of</span><span class="o">(</span><span class="n">Map</span> <span class="n">m</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">new</span> <span class="nf">Point</span><span class="o">(</span><span class="n">m</span><span class="o">[</span><span class="s1">'x'</span><span class="o">],</span> <span class="n">m</span><span class="o">[</span><span class="s1">'y'</span><span class="o">])</span>
+  <span class="o">}</span>
+
+<span class="o">}</span>
+
+<span class="n">task</span> <span class="n">hello</span> <span class="o">{}</span>
+</code></pre>
+    </div>
+  </div>
+
+  <p>下記コマンドで実行可能です。</p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">ターミナル</span></div>
+    <div class="highlight">
+      <pre><code><span class="nv">$ </span>./gradlew hello <span class="nt">-q</span>
+<span class="nt">---</span>
+15, 30
+<span class="nt">---</span>
+<span class="nt">---</span>
+2, 3
+<span class="nt">---</span>
+<span class="nt">---</span>
+17, 33
+<span class="nt">---</span>
+5678910
+0123456789
+</code></pre>
+    </div>
+  </div>
+
+  <p>ここで、最初の build.gradle を Java <font color="red">っぽく</font>書いてみた場合の記述を紹介します。<br>
+    ※ Closure の部分は Groovy 構文を利用しています。</p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">build.gradle(Java)</span></div>
+    <div class="highlight">
+      <pre><code><span class="c1">// apply plugin: 'java'</span>
+<span class="nc">Map</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span> <span class="nc">String</span><span class="o">&gt;</span> <span class="n">pluginJava</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HashMap</span><span class="o">&lt;&gt;();</span>
+<span class="n">pluginJava</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">"plugin"</span><span class="o">,</span> <span class="s">"java"</span><span class="o">);</span>
+<span class="k">this</span><span class="o">.</span><span class="na">project</span><span class="o">.</span><span class="na">apply</span><span class="o">(</span><span class="n">pluginJava</span><span class="o">);</span>
+
+<span class="c1">// apply plugin: 'application'</span>
+<span class="nc">Map</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span> <span class="nc">String</span><span class="o">&gt;</span> <span class="n">pluginApplication</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HashMap</span><span class="o">&lt;&gt;();</span>
+<span class="n">pluginApplication</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">"plugin"</span><span class="o">,</span> <span class="s">"application"</span><span class="o">);</span>
+<span class="k">this</span><span class="o">.</span><span class="na">project</span><span class="o">.</span><span class="na">apply</span><span class="o">(</span><span class="n">pluginApplication</span><span class="o">);</span>
+
+<span class="c1">// repositories {</span>
+<span class="c1">//     jcenter()</span>
+<span class="c1">// }</span>
+<span class="k">this</span><span class="o">.</span><span class="na">project</span><span class="o">.</span><span class="na">repositories</span><span class="o">({</span> <span class="o">-&gt;</span>
+    <span class="n">jcenter</span><span class="o">();</span>
+<span class="o">});</span>
+
+<span class="c1">// dependencies {</span>
+<span class="c1">//     compile 'com.google.guava:guava:22.0'</span>
+<span class="c1">//     testCompile 'junit:junit:4.12'</span>
+<span class="c1">// }</span>
+<span class="k">this</span><span class="o">.</span><span class="na">project</span><span class="o">.</span><span class="na">dependencies</span><span class="o">({</span> <span class="o">-&gt;</span>
+    <span class="n">compile</span><span class="o">(</span><span class="s">"com.google.guava:guava:22.0"</span><span class="o">);</span>
+    <span class="n">testCompile</span><span class="o">(</span><span class="s">"junit:junit:4.12"</span><span class="o">);</span>
+<span class="o">});</span>
+
+<span class="c1">// mainClassName = 'App'</span>
+<span class="k">this</span><span class="o">.</span><span class="na">project</span><span class="o">.</span><span class="na">mainClassName</span> <span class="o">=</span> <span class="s">"App"</span><span class="o">;</span>
+</code></pre>
+    </div>
+  </div>
+
+  <h2>
+    <span id="closure---thisownerdelegate" class="fragment"></span><a href="#closure---thisownerdelegate"><i
+        class="fa fa-link"></i></a>Closure - this/owner/delegate
+  </h2>
+
+  <p>Closure 内部の暗黙的な参照先として以下の3つが存在します。</p>
+
+  <ul>
+    <li>this …… 該当スコープ定義元の参照です。 Java の this と同様です。</li>
+    <li>owner …… 該当 Closure 定義元の参照です。基本的に this と同様ですが、Closure の中に Closure を定義した場合に 外部 Closure
+      が参照先となります。</li>
+    <li>delegate …… 該当 Closure 内の処理の委譲先です。動的に変更することが可能です。</li>
+  </ul>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">build.gradle</span></div>
+    <div class="highlight">
+      <pre><code><span class="kd">class</span> <span class="nc">Deleg1</span> <span class="o">{</span>
+  <span class="n">String</span> <span class="nf">hello_A</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="s2">"Deleg1 Say hello_A() !!"</span>
+  <span class="o">}</span>
+  <span class="n">String</span> <span class="nf">hello_B</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="s2">"Deleg1 Say hello_B() !!"</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">Deleg2</span> <span class="o">{</span>
+  <span class="n">String</span> <span class="nf">hello_A</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="s2">"Deleg2 Say hello_A() !!"</span>
+  <span class="o">}</span>
+  <span class="n">String</span> <span class="nf">hello_B</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="s2">"Deleg2 Say hello_B() !!"</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">Main</span> <span class="o">{</span>
+  <span class="kt">void</span> <span class="nf">execute</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">Closure</span> <span class="n">c</span> <span class="o">=</span> <span class="o">{</span>
+      <span class="n">println</span> <span class="s2">"this: ${this.class}"</span>
+      <span class="n">println</span> <span class="s2">"owner: ${owner.class}"</span>
+      <span class="n">println</span> <span class="s2">"delegate: ${delegate.class}"</span>
+      <span class="n">println</span> <span class="nf">hello_A</span><span class="o">()</span>
+      <span class="n">println</span> <span class="nf">hello_B</span><span class="o">()</span>
+
+      <span class="n">Closure</span> <span class="n">cc</span> <span class="o">=</span> <span class="o">{</span>
+        <span class="n">println</span> <span class="s2">"this: ${this.class}"</span>
+        <span class="n">println</span> <span class="s2">"owner: ${owner.class}"</span>
+        <span class="n">println</span> <span class="s2">"delegate: ${delegate.class}"</span>
+        <span class="n">println</span> <span class="nf">hello_A</span><span class="o">()</span>
+        <span class="n">println</span> <span class="nf">hello_B</span><span class="o">()</span>
+      <span class="o">}</span>
+      <span class="n">println</span> <span class="s2">"\n-- execute cc --"</span>
+      <span class="n">cc</span><span class="o">()</span>
+      <span class="n">println</span> <span class="s2">"\n-- execute cc with Deleg2 --"</span>
+      <span class="n">cc</span><span class="o">.</span><span class="na">delegate</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Deleg2</span><span class="o">()</span>
+      <span class="n">cc</span><span class="o">()</span>
+      <span class="n">println</span> <span class="s2">"\n-- execute cc by Closure.DELEGATE_FIRST --"</span>
+      <span class="n">cc</span><span class="o">.</span><span class="na">resolveStrategy</span> <span class="o">=</span> <span class="n">Closure</span><span class="o">.</span><span class="na">DELEGATE_FIRST</span>
+      <span class="n">cc</span><span class="o">()</span>
+    <span class="o">}</span>
+
+    <span class="n">println</span> <span class="s2">"Start Closure"</span>
+    <span class="n">println</span> <span class="s2">"\n-- execute c with Deleg1 --"</span>
+<span class="c1">//  c() &lt;- ここで c() を呼び出すと hello_B() メソッド参照先が見つからずにエラー</span>
+    <span class="n">c</span><span class="o">.</span><span class="na">delegate</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Deleg1</span><span class="o">()</span>
+    <span class="n">c</span><span class="o">()</span>
+    <span class="n">println</span> <span class="s2">"\nEnd Closure"</span>
+  <span class="o">}</span>
+
+  <span class="n">String</span> <span class="nf">hello_A</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="s2">"Main Say hello_A() !!"</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+<span class="kt">def</span> <span class="n">m</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Main</span><span class="o">()</span>
+<span class="n">m</span><span class="o">.</span><span class="na">execute</span><span class="o">()</span>
+</code></pre>
+    </div>
+  </div>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">ターミナル</span></div>
+    <div class="highlight">
+      <pre><code><span class="nv">$ </span>./gradlew <span class="nt">-q</span>
+Start Closure
+
+<span class="nt">--</span> execute c with Deleg1 <span class="nt">--</span>
+this: class Main
+owner: class Main
+delegate: class Deleg1
+Main Say hello_A<span class="o">()</span> <span class="o">!!</span>
+Deleg1 Say hello_B<span class="o">()</span> <span class="o">!!</span>
+
+<span class="nt">--</span> execute cc <span class="nt">--</span>
+this: class Main
+owner: class Main<span class="nv">$_execute_closure1</span>
+delegate: class Main<span class="nv">$_execute_closure1</span>
+Main Say hello_A<span class="o">()</span> <span class="o">!!</span>
+Deleg1 Say hello_B<span class="o">()</span> <span class="o">!!</span>
+
+<span class="nt">--</span> execute cc with Deleg2 <span class="nt">--</span>
+this: class Main
+owner: class Main<span class="nv">$_execute_closure1</span>
+delegate: class Deleg2
+Main Say hello_A<span class="o">()</span> <span class="o">!!</span>
+Deleg1 Say hello_B<span class="o">()</span> <span class="o">!!</span>
+
+<span class="nt">--</span> execute cc by Closure.DELEGATE_FIRST <span class="nt">--</span>
+this: class Main
+owner: class Main<span class="nv">$_execute_closure1</span>
+delegate: class Deleg2
+Deleg2 Say hello_A<span class="o">()</span> <span class="o">!!</span>
+Deleg2 Say hello_B<span class="o">()</span> <span class="o">!!</span>
+
+End Closure
+</code></pre>
+    </div>
+  </div>
+
+  <p>Gradle を扱う上で最も重要なのは delegate です。この委譲先を知ることで Closure 内で呼ばれるメソッドが、どこで定義されているか分かるようになります。</p>
+
+  <p>コード中にあるように、これら参照先に対する探索優先度は resolveStrategy プロパティで指定することができます。<br>
+    優先度については、下記記事が参考になります。</p>
+
+  <ul>
+    <li><a href="https://nalu-labo.amebaownd.com/posts/676038" rel="nofollow noopener" target="_blank">はじめようApache
+        Groovy #15 - クロージャ</a></li>
+    <li>
+      <a href="https://github.com/groovy/groovy-core/blob/master/src/main/groovy/lang/Closure.java" class="autolink"
+        rel="nofollow noopener"
+        target="_blank">https://github.com/groovy/groovy-core/blob/master/src/main/groovy/lang/Closure.java</a>
+
+      <ul>
+        <li>OWNER_FIRST</li>
+        <li>DELEGATE_FIRST</li>
+        <li>OWNER_ONLY</li>
+        <li>DELEGATE_ONLY</li>
+        <li>TO_SELF</li>
+      </ul>
+    </li>
+  </ul>
+
+  <h1>
+    <span id="gradle-内で利用されているクラス抜粋" class="fragment"></span><a
+      href="#gradle-%E5%86%85%E3%81%A7%E5%88%A9%E7%94%A8%E3%81%95%E3%82%8C%E3%81%A6%E3%81%84%E3%82%8B%E3%82%AF%E3%83%A9%E3%82%B9%E6%8A%9C%E7%B2%8B"><i
+        class="fa fa-link"></i></a>Gradle 内で利用されているクラス(抜粋)
+  </h1>
+
+  <ul>
+    <li>Project (<a href="http://gradle.monochromeroad.com/docs/javadoc/org/gradle/api/Project.html"
+        rel="nofollow noopener" target="_blank">doc</a>)</li>
+  </ul>
+
+  <p>前述の Java ふうに記述した例では this.project というインスタンスを利用して各種プロパティへアクセスしていました。<br>
+    この project インスタンスが、build.gradle ファイル中の定義とやり取りの基本となるオブジェクトです。</p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">JavaDocより引用</span></div>
+    <div class="highlight">
+      <pre><code>このインターフェースは、ビルドファイル内でGradleとやりとりする際、メインで使用するAPIです。
+Projectから、Gradleの全ての機能にプログラム的にアクセスできます。
+...
+Projectと<span class="s2">"build.gradle"</span>ファイルは、１対１の関係性を持ちます。 
+</code></pre>
+    </div>
+  </div>
+
+  <ul>
+    <li>Task (<a href="http://gradle.monochromeroad.com/docs/javadoc/org/gradle/api/Task.html" rel="nofollow noopener"
+        target="_blank">doc</a>)</li>
+  </ul>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">JavaDocより引用</span></div>
+    <div class="highlight">
+      <pre><code>Taskはクラスのコンパイルやjavadocの生成など、ビルドに対する単一のアトミックな断片を表します。
+</code></pre>
+    </div>
+  </div>
+
+  <h1>
+    <span id="gradle-を構成するプロパティ" class="fragment"></span><a
+      href="#gradle-%E3%82%92%E6%A7%8B%E6%88%90%E3%81%99%E3%82%8B%E3%83%97%E3%83%AD%E3%83%91%E3%83%86%E3%82%A3"><i
+        class="fa fa-link"></i></a>Gradle を構成するプロパティ
+  </h1>
+
+  <p>プロパティは変数のようなものです。<br>
+    外部(ビルドスクリプト外)から指定するもの、ビルドスクリプト内で定義するもの、があります。<br>
+    外部から与えられた値で動的にビルド動作を変更したい場合や、値の共通化などに利用します。</p>
+
+  <ul>
+    <li>システムプロパティ …… 外部から指定するプロパティです。</li>
+    <li>拡張プロパティ …… ビルドスクリプト内で定義するプロパティです。</li>
+    <li>プロジェクトプロパティ …… 外部から指定するプロパティで、内部的には拡張プロパティと同様に扱われます。</li>
+  </ul>
+
+  <h2>
+    <span id="システムプロパティ" class="fragment"></span><a
+      href="#%E3%82%B7%E3%82%B9%E3%83%86%E3%83%A0%E3%83%97%E3%83%AD%E3%83%91%E3%83%86%E3%82%A3"><i
+        class="fa fa-link"></i></a>システムプロパティ
+  </h2>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">build.gradle</span></div>
+    <div class="highlight">
+      <pre><code><span class="n">task</span> <span class="n">hello</span> <span class="o">{</span>
+  <span class="n">doLast</span> <span class="o">{</span>
+    <span class="n">println</span> <span class="n">System</span><span class="o">.</span><span class="na">properties</span><span class="o">[</span><span class="s1">'hello.test'</span><span class="o">]</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+    </div>
+  </div>
+
+  <h3>
+    <span id="実行時に指定する" class="fragment"></span><a
+      href="#%E5%AE%9F%E8%A1%8C%E6%99%82%E3%81%AB%E6%8C%87%E5%AE%9A%E3%81%99%E3%82%8B"><i
+        class="fa fa-link"></i></a>実行時に指定する
+  </h3>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">ターミナル</span></div>
+    <div class="highlight">
+      <pre><code><span class="nv">$ </span>./gradlew hello <span class="nt">-Dhello</span>.test<span class="o">=</span><span class="s2">"Hello Gradle 1"</span>
+
+<span class="o">&gt;</span> Task :hello
+Hello Gradle 1
+</code></pre>
+    </div>
+  </div>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">ターミナル</span></div>
+    <div class="highlight">
+      <pre><code><span class="nv">$ </span>./gradlew hello <span class="nt">--system-prop</span> hello.test<span class="o">=</span><span class="s2">"Hello Gradle 2"</span>
+
+<span class="o">&gt;</span> Task :hello
+Hello Gradle 2
+</code></pre>
+    </div>
+  </div>
+
+  <h3>
+    <span id="gradleproperties-に指定する" class="fragment"></span><a
+      href="#gradleproperties-%E3%81%AB%E6%8C%87%E5%AE%9A%E3%81%99%E3%82%8B"><i
+        class="fa fa-link"></i></a>gradle.properties に指定する
+  </h3>
+
+  <p>gradle.properties に定義して利用する場合は systemProp.＜システムプロパティ名＞=＜値＞と定義します。<br>
+    gradle.properties が無い場合は、プロジェクトのルートディレクトリに作成してください。</p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">gradle.properties</span></div>
+    <div class="highlight">
+      <pre><code><span class="py">systemProp.hello.test</span><span class="p">=</span><span class="s">Hello Gradle 3</span>
+</code></pre>
+    </div>
+  </div>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">ターミナル</span></div>
+    <div class="highlight">
+      <pre><code><span class="nv">$ </span>./gradlew hello
+
+<span class="o">&gt;</span> Task :hello
+Hello Gradle 3
+</code></pre>
+    </div>
+  </div>
+
+  <h3>
+    <span id="同時に指定した場合の優先度" class="fragment"></span><a
+      href="#%E5%90%8C%E6%99%82%E3%81%AB%E6%8C%87%E5%AE%9A%E3%81%97%E3%81%9F%E5%A0%B4%E5%90%88%E3%81%AE%E5%84%AA%E5%85%88%E5%BA%A6"><i
+        class="fa fa-link"></i></a>同時に指定した場合の優先度
+  </h3>
+
+  <ul>
+    <li>gradle.properties より実行時の引数が優先される。</li>
+    <li>引数は後方に指定したものが優先される。</li>
+  </ul>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">ターミナル</span></div>
+    <div class="highlight">
+      <pre><code><span class="nv">$ </span>./gradlew hello <span class="nt">-Dhello</span>.test<span class="o">=</span><span class="s2">"Hello Gradle 1"</span> <span class="nt">--system-prop</span> hello.test<span class="o">=</span><span class="s2">"Hello Gradle 2"</span>
+
+<span class="o">&gt;</span> Task :hello
+Hello Gradle 2
+</code></pre>
+    </div>
+  </div>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">ターミナル</span></div>
+    <div class="highlight">
+      <pre><code><span class="nv">$ </span>./gradlew hello <span class="nt">--system-prop</span> hello.test<span class="o">=</span><span class="s2">"Hello Gradle 2"</span> <span class="nt">-Dhello</span>.test<span class="o">=</span><span class="s2">"Hello Gradle 1"</span>
+
+<span class="o">&gt;</span> Task :hello
+Hello Gradle 1
+</code></pre>
+    </div>
+  </div>
+
+  <h2>
+    <span id="拡張プロパティ" class="fragment"></span><a
+      href="#%E6%8B%A1%E5%BC%B5%E3%83%97%E3%83%AD%E3%83%91%E3%83%86%E3%82%A3"><i class="fa fa-link"></i></a>拡張プロパティ
+  </h2>
+
+  <p>ext プロパティのクロージャ内で定義します。</p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">build.gradle</span></div>
+    <div class="highlight">
+      <pre><code><span class="n">ext</span> <span class="o">{</span>
+  <span class="n">prop1</span> <span class="o">=</span> <span class="s2">"Hello Ext Prop 1"</span>
+  <span class="n">prop2</span> <span class="o">=</span> <span class="s2">"Hello Ext Prop 2"</span>
+<span class="o">}</span>
+
+<span class="n">task</span> <span class="n">hello</span> <span class="o">{</span>
+  <span class="n">doLast</span> <span class="o">{</span>
+    <span class="n">println</span> <span class="n">prop1</span>
+    <span class="n">println</span> <span class="n">prop2</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+    </div>
+  </div>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">ターミナル</span></div>
+    <div class="highlight">
+      <pre><code><span class="nv">$ </span>./gradlew hello
+
+<span class="o">&gt;</span> Task :hello
+Hello Ext Prop 1
+Hello Ext Prop 2
+</code></pre>
+    </div>
+  </div>
+
+  <h3>
+    <span id="project-インスタンス経由で直接上書きする" class="fragment"></span><a
+      href="#project-%E3%82%A4%E3%83%B3%E3%82%B9%E3%82%BF%E3%83%B3%E3%82%B9%E7%B5%8C%E7%94%B1%E3%81%A7%E7%9B%B4%E6%8E%A5%E4%B8%8A%E6%9B%B8%E3%81%8D%E3%81%99%E3%82%8B"><i
+        class="fa fa-link"></i></a>project インスタンス経由で直接上書きする
+  </h3>
+
+  <p>project.ext.(プロパティ名) で拡張プロパティを直接指定可能。</p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">build.gradle</span></div>
+    <div class="highlight">
+      <pre><code><span class="n">ext</span> <span class="o">{</span>
+  <span class="n">prop1</span> <span class="o">=</span> <span class="s2">"Hello Ext Prop 1"</span>
+<span class="o">}</span>
+
+<span class="n">task</span> <span class="n">hello</span> <span class="o">{</span>
+  <span class="n">doLast</span> <span class="o">{</span>
+    <span class="n">println</span> <span class="n">prop1</span>
+    <span class="n">project</span><span class="o">.</span><span class="na">ext</span><span class="o">.</span><span class="na">prop1</span> <span class="o">=</span> <span class="s2">"Override prop1"</span>
+    <span class="n">println</span> <span class="n">prop1</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+    </div>
+  </div>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">ターミナル</span></div>
+    <div class="highlight">
+      <pre><code><span class="nv">$ </span>./gradlew hello
+
+<span class="o">&gt;</span> Task :hello
+Hello Ext Prop 1
+Override prop1
+</code></pre>
+    </div>
+  </div>
+
+  <h2>
+    <span id="プロジェクトプロパティ" class="fragment"></span><a
+      href="#%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%83%97%E3%83%AD%E3%83%91%E3%83%86%E3%82%A3"><i
+        class="fa fa-link"></i></a>プロジェクトプロパティ
+  </h2>
+
+  <p>内部的には拡張プロパティと同様に扱われる。<br>
+    プロパティ名(下記の例では sample)を指定すればスクリプト内で参照可能。</p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">build.gradle</span></div>
+    <div class="highlight">
+      <pre><code><span class="n">task</span> <span class="n">hello</span> <span class="o">{</span>
+  <span class="n">doLast</span> <span class="o">{</span>
+    <span class="n">println</span> <span class="n">sample</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+    </div>
+  </div>
+
+  <h3>
+    <span id="gradleproperties-に指定する-1" class="fragment"></span><a
+      href="#gradleproperties-%E3%81%AB%E6%8C%87%E5%AE%9A%E3%81%99%E3%82%8B-1"><i
+        class="fa fa-link"></i></a>gradle.properties に指定する
+  </h3>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">gradle.properties</span></div>
+    <div class="highlight">
+      <pre><code><span class="py">sample</span><span class="p">=</span><span class="s">Project Property 1</span>
+</code></pre>
+    </div>
+  </div>
+
+  <div class="code-frame">
+    <div class="highlight">
+      <pre><code><span class="nv">$ </span>./gradlew hello
+
+<span class="o">&gt;</span> Task :hello
+Project Property 1
+</code></pre>
+    </div>
+  </div>
+
+  <h3>
+    <span id="実行時に指定する-1" class="fragment"></span><a
+      href="#%E5%AE%9F%E8%A1%8C%E6%99%82%E3%81%AB%E6%8C%87%E5%AE%9A%E3%81%99%E3%82%8B-1"><i
+        class="fa fa-link"></i></a>実行時に指定する
+  </h3>
+
+  <div class="code-frame">
+    <div class="highlight">
+      <pre><code><span class="nv">$ </span>./gradlew hello <span class="nt">-Psample</span><span class="o">=</span><span class="s2">"Project Property 2"</span>
+
+<span class="o">&gt;</span> Task :hello
+Project Property 2
+</code></pre>
+    </div>
+  </div>
+
+  <div class="code-frame">
+    <div class="highlight">
+      <pre><code><span class="nv">$ </span>./gradlew hello <span class="nt">--project-prop</span> <span class="nv">sample</span><span class="o">=</span><span class="s2">"Project Property 3"</span>
+
+<span class="o">&gt;</span> Task :hello
+Project Property 3
+</code></pre>
+    </div>
+  </div>
+
+  <h1>
+    <span id="java-プロジェクト" class="fragment"></span><a
+      href="#java-%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88"><i class="fa fa-link"></i></a>Java
+    プロジェクト
+  </h1>
+
+  <p>ここでは Java を利用したプロジェクトを Gradle を使ってビルドする場合によく利用する事項を紹介します。<br>
+    今までの項で build.gradle を編集した場合は下記の状態に戻してください。</p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">build.gradle</span></div>
+    <div class="highlight">
+      <pre><code><span class="n">apply</span> <span class="nl">plugin:</span> <span class="s1">'java'</span>
+<span class="n">apply</span> <span class="nl">plugin:</span> <span class="s1">'application'</span>
+
+<span class="n">repositories</span> <span class="o">{</span>
+    <span class="n">jcenter</span><span class="o">()</span>
+<span class="o">}</span>
+
+<span class="n">dependencies</span> <span class="o">{</span>
+    <span class="n">compile</span> <span class="s1">'com.google.guava:guava:22.0'</span>
+    <span class="n">testCompile</span> <span class="s1">'junit:junit:4.12'</span>
+<span class="o">}</span>
+
+<span class="n">mainClassName</span> <span class="o">=</span> <span class="s1">'App'</span>
+</code></pre>
+    </div>
+  </div>
+
+  <h2>
+    <span id="よく利用するプラグイン" class="fragment"></span><a
+      href="#%E3%82%88%E3%81%8F%E5%88%A9%E7%94%A8%E3%81%99%E3%82%8B%E3%83%97%E3%83%A9%E3%82%B0%E3%82%A4%E3%83%B3"><i
+        class="fa fa-link"></i></a>よく利用するプラグイン
+  </h2>
+
+  <ul>
+    <li><a href="https://docs.gradle.org/current/userguide/java_plugin.html" rel="nofollow noopener"
+        target="_blank">java プラグイン</a></li>
+    <li><a href="https://docs.gradle.org/current/userguide/application_plugin.html" rel="nofollow noopener"
+        target="_blank">application プラグイン</a></li>
+    <li><a href="https://docs.gradle.org/current/userguide/maven_plugin.html" rel="nofollow noopener"
+        target="_blank">maven プラグイン</a></li>
+  </ul>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">build.gradle</span></div>
+    <div class="highlight">
+      <pre><code><span class="n">apply</span> <span class="nl">plugin:</span> <span class="s1">'java'</span>
+<span class="n">apply</span> <span class="nl">plugin:</span> <span class="s1">'application'</span>
+<span class="n">apply</span> <span class="nl">plugin:</span> <span class="s1">'maven'</span>
+</code></pre>
+    </div>
+  </div>
+
+  <h2>
+    <span id="主なタスク" class="fragment"></span><a href="#%E4%B8%BB%E3%81%AA%E3%82%BF%E3%82%B9%E3%82%AF"><i
+        class="fa fa-link"></i></a>主なタスク
+  </h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>タスク名</th>
+        <th>依存タスク</th>
+        <th>概要</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td>clean</td>
+        <td>-</td>
+        <td>成果物(build)を削除します。</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>build</td>
+        <td>-</td>
+        <td>プロジェクトをビルドします。</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>__ assemble</td>
+        <td>build</td>
+        <td>成果物を生成します。</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>____ jar</td>
+        <td>assemble</td>
+        <td>jar ファイルを作成します。</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td>______ classes</td>
+        <td>jar</td>
+        <td>main ソースセット</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td>________ compileJava</td>
+        <td>classes</td>
+        <td>main/java をコンパイルします。</td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td>________ processResources</td>
+        <td>classes</td>
+        <td>main/resources をプロダクト成果物としてコピーします。</td>
+      </tr>
+      <tr>
+        <td>8</td>
+        <td>__ check</td>
+        <td>build</td>
+        <td>コードチェック系タスクを実行します。</td>
+      </tr>
+      <tr>
+        <td>9</td>
+        <td>____ test</td>
+        <td>check</td>
+        <td>Junit などのコードテストを実行します。</td>
+      </tr>
+      <tr>
+        <td>10</td>
+        <td>______ testClasses</td>
+        <td>test</td>
+        <td>test ソースセット</td>
+      </tr>
+      <tr>
+        <td>11</td>
+        <td>________ compileTestJava</td>
+        <td>testClasses</td>
+        <td>test/java をコンパイルします。</td>
+      </tr>
+      <tr>
+        <td>12</td>
+        <td>________ processTestResources</td>
+        <td>testClasses</td>
+        <td>test/resources をテスト成果物としてコピーします。</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>
+    <span id="compile-や-testcompile" class="fragment"></span><a href="#compile-%E3%82%84-testcompile"><i
+        class="fa fa-link"></i></a>compile や testCompile
+  </h2>
+
+  <p>コンパイル時に必要な依存ライブラリを設定します。<br>
+    compile に指定した場合は、プロダクトコードのコンパイルや実行時の依存に含まれます。war ファイルなどを作成する場合は、war ファイル内にも含まれます。<br>
+    testCompile はテストコードのコンパイルやテスト実行時の依存にのみ含まれ、war ファイルなどには含まれません。</p>
+
+  <h3>
+    <span id="maven-central" class="fragment"></span><a href="#maven-central"><i class="fa fa-link"></i></a>maven
+    Central
+  </h3>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">build.gradle</span></div>
+    <div class="highlight">
+      <pre><code><span class="n">repositories</span> <span class="o">{</span>
+  <span class="n">mavenCentral</span><span class="o">();</span>
+<span class="o">}</span>
+</code></pre>
+    </div>
+  </div>
+
+  <ol>
+    <li>
+      <p><a href="https://mvnrepository.com/" class="autolink" rel="nofollow noopener"
+          target="_blank">https://mvnrepository.com/</a> へアクセスする</p>
+    </li>
+    <li>
+      <p>検索窓から OSS ライブラリを検索可能<br>
+        <a><img
+            src="https://qiita-user-contents.imgix.net/https%3A%2F%2Fqiita-image-store.s3.amazonaws.com%2F0%2F50032%2Fb0b742c5-cf75-4019-e57b-699d1f290da0.png?ixlib=rb-4.0.0&amp;auto=format&amp;gif-q=60&amp;q=75&amp;s=c09c518c9b92d5869240c4b97c89237e"
+            alt="image.png"
+            srcset="https://qiita-user-contents.imgix.net/https%3A%2F%2Fqiita-image-store.s3.amazonaws.com%2F0%2F50032%2Fb0b742c5-cf75-4019-e57b-699d1f290da0.png?ixlib=rb-4.0.0&amp;auto=format&amp;gif-q=60&amp;q=75&amp;w=1400&amp;fit=max&amp;s=edcc90b3a0be1603ec6510d4ce89283a 1x"
+            loading="lazy"></a>
+      </p>
+    </li>
+    <li>
+      <p>希望のライブラリを検索し、選択する。<br>
+        <a><img
+            src="https://qiita-user-contents.imgix.net/https%3A%2F%2Fqiita-image-store.s3.amazonaws.com%2F0%2F50032%2Fbaf86134-251f-a15a-7a67-fb2028612273.png?ixlib=rb-4.0.0&amp;auto=format&amp;gif-q=60&amp;q=75&amp;s=4b0eb54877ad51aebafbad775314480b"
+            alt="image.png"
+            srcset="https://qiita-user-contents.imgix.net/https%3A%2F%2Fqiita-image-store.s3.amazonaws.com%2F0%2F50032%2Fbaf86134-251f-a15a-7a67-fb2028612273.png?ixlib=rb-4.0.0&amp;auto=format&amp;gif-q=60&amp;q=75&amp;w=1400&amp;fit=max&amp;s=935ac74825ff6f934d6986feae9579c4 1x"
+            loading="lazy"></a>
+      </p>
+    </li>
+    <li>
+      <p>希望のバージョンを選択する。(Usages列を見ると良く利用されているバージョンが分かる)<br>
+        <a><img
+            src="https://qiita-user-contents.imgix.net/https%3A%2F%2Fqiita-image-store.s3.amazonaws.com%2F0%2F50032%2F471063e2-e9dc-cebc-5add-c8f1624b4443.png?ixlib=rb-4.0.0&amp;auto=format&amp;gif-q=60&amp;q=75&amp;s=001e6f310afb6847ec4bb68181d5c0a4"
+            alt="image.png"
+            srcset="https://qiita-user-contents.imgix.net/https%3A%2F%2Fqiita-image-store.s3.amazonaws.com%2F0%2F50032%2F471063e2-e9dc-cebc-5add-c8f1624b4443.png?ixlib=rb-4.0.0&amp;auto=format&amp;gif-q=60&amp;q=75&amp;w=1400&amp;fit=max&amp;s=4a84a79bda48a74ee086908472e48d43 1x"
+            loading="lazy"></a>
+      </p>
+    </li>
+    <li>
+      <p>「Gradle」タブを参照することで、Gradle の依存関係への指定方法がわかる。「License」項には OSS ライセンス種別も記載されている。<br>
+        <a><img
+            src="https://qiita-user-contents.imgix.net/https%3A%2F%2Fqiita-image-store.s3.amazonaws.com%2F0%2F50032%2F3d485ebf-4d57-75ac-00ec-c48c59f50a10.png?ixlib=rb-4.0.0&amp;auto=format&amp;gif-q=60&amp;q=75&amp;s=917eff9e5da590d9befb7adaf3774deb"
+            alt="image.png"
+            srcset="https://qiita-user-contents.imgix.net/https%3A%2F%2Fqiita-image-store.s3.amazonaws.com%2F0%2F50032%2F3d485ebf-4d57-75ac-00ec-c48c59f50a10.png?ixlib=rb-4.0.0&amp;auto=format&amp;gif-q=60&amp;q=75&amp;w=1400&amp;fit=max&amp;s=dfaa3f5d265094ba6a0a76b8464a7ef0 1x"
+            loading="lazy"></a>
+      </p>
+    </li>
+    <li>
+      <p>build.gradle に依存関係を記述する。</p>
+    </li>
+  </ol>
+
+  <div class="code-frame">
+    <div class="highlight">
+      <pre><code><span class="n">dependencies</span> <span class="o">{</span>
+  <span class="o">...</span>
+  <span class="n">compile</span> <span class="nl">group:</span> <span class="s1">'com.fasterxml.jackson.core'</span><span class="o">,</span> <span class="nl">name:</span> <span class="s1">'jackson-core'</span><span class="o">,</span> <span class="nl">version:</span> <span class="s1">'2.9.0'</span>
+  <span class="o">...</span>
+<span class="o">}</span>
+</code></pre>
+    </div>
+  </div>
+
+  <h2>
+    <span id="jar-の作り方" class="fragment"></span><a href="#jar-%E3%81%AE%E4%BD%9C%E3%82%8A%E6%96%B9"><i
+        class="fa fa-link"></i></a>jar の作り方
+  </h2>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">ターミナル</span></div>
+    <div class="highlight">
+      <pre><code><span class="nv">$ </span>./gradlew jar
+<span class="nv">$ </span><span class="nb">ls </span>build/libs/
+samplepj.jar
+</code></pre>
+    </div>
+  </div>
+
+  <h2>
+    <span id="main-メソッドを持つ-クラスを実行したい" class="fragment"></span><a
+      href="#main-%E3%83%A1%E3%82%BD%E3%83%83%E3%83%89%E3%82%92%E6%8C%81%E3%81%A4-%E3%82%AF%E3%83%A9%E3%82%B9%E3%82%92%E5%AE%9F%E8%A1%8C%E3%81%97%E3%81%9F%E3%81%84"><i
+        class="fa fa-link"></i></a>main メソッドを持つ クラスを実行したい
+  </h2>
+
+  <p>main メソッドを実行する場合は application プラグインが必要となります。<br>
+    application プラグインで追加される mainClassName プロパティにクラス名を指定し、run タスクを実行することでアプリケーションを実行することができます。</p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">build.gradle</span></div>
+    <div class="highlight">
+      <pre><code><span class="o">...</span>
+<span class="n">mainClassName</span> <span class="o">=</span> <span class="s1">'sample.Main'</span>
+<span class="o">...</span>
+</code></pre>
+    </div>
+  </div>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">ターミナル</span></div>
+    <div class="highlight">
+      <pre><code><span class="nv">$ </span>./gradlew run
+</code></pre>
+    </div>
+  </div>
+
+  <h2>
+    <span id="コードチェックをしたい" class="fragment"></span><a
+      href="#%E3%82%B3%E3%83%BC%E3%83%89%E3%83%81%E3%82%A7%E3%83%83%E3%82%AF%E3%82%92%E3%81%97%E3%81%9F%E3%81%84"><i
+        class="fa fa-link"></i></a>コードチェックをしたい
+  </h2>
+
+  <h3>
+    <span id="findbugs-doc" class="fragment"></span><a href="#findbugs-doc"><i class="fa fa-link"></i></a>findbugs
+    (<a href="https://docs.gradle.org/current/userguide/findbugs_plugin.html" rel="nofollow noopener"
+      target="_blank">doc</a>)
+  </h3>
+
+  <p>静的コード解析用プラグインです。</p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">build.gradle</span></div>
+    <div class="highlight">
+      <pre><code><span class="n">apply</span> <span class="nl">plugin:</span> <span class="s1">'findbugs'</span>
+</code></pre>
+    </div>
+  </div>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">ターミナル</span></div>
+    <div class="highlight">
+      <pre><code><span class="nv">$ </span>./gradlew findBugsMain <span class="nt">-q</span>
+<span class="nv">$ </span><span class="nb">ls </span>build/reports/findbugs/
+main.xml
+</code></pre>
+    </div>
+  </div>
+
+  <h3>
+    <span id="checkstyle-doc" class="fragment"></span><a href="#checkstyle-doc"><i class="fa fa-link"></i></a>checkstyle
+    (<a href="https://docs.gradle.org/current/userguide/checkstyle_plugin.html" rel="nofollow noopener"
+      target="_blank">doc</a>)
+  </h3>
+
+  <p>コードスタイルのチェック用です。</p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">build.gradle</span></div>
+    <div class="highlight">
+      <pre><code><span class="n">apply</span> <span class="nl">plugin:</span> <span class="s1">'checkstyle'</span>
+</code></pre>
+    </div>
+  </div>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">ターミナル</span></div>
+    <div class="highlight">
+      <pre><code><span class="nv">$ </span><span class="nb">mkdir</span> <span class="nt">-p</span> config/checkstyle
+</code></pre>
+    </div>
+  </div>
+
+  <p><qiita-embed-ogp
+      src="https://raw.githubusercontent.com/checkstyle/checkstyle/master/src/main/resources/sun_checks.xml"></qiita-embed-ogp>
+  </p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">config/checkstyle/checkstyle.xml</span></div>
+    <div class="highlight">
+      <pre><code><span class="c">&lt;!-- sun_checks.xml の内容を貼り付ける --&gt;</span>
+</code></pre>
+    </div>
+  </div>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">ターミナル</span></div>
+    <div class="highlight">
+      <pre><code><span class="nv">$ </span>./gradlew checkstyleMain <span class="nt">-q</span>
+<span class="nv">$ </span><span class="nb">ls </span>build/reports/checkstyle/
+main.html main.xml
+</code></pre>
+    </div>
+  </div>
+
+  <h3>
+    <span id="pmd-doc" class="fragment"></span><a href="#pmd-doc"><i class="fa fa-link"></i></a>pmd
+    (<a href="https://docs.gradle.org/current/userguide/pmd_plugin.html" rel="nofollow noopener"
+      target="_blank">doc</a>)
+  </h3>
+
+  <p>静的コードチェックのプラグインです。</p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">build.gradle</span></div>
+    <div class="highlight">
+      <pre><code><span class="n">apply</span> <span class="nl">plugin:</span> <span class="s1">'pmd'</span>
+</code></pre>
+    </div>
+  </div>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">ターミナル</span></div>
+    <div class="highlight">
+      <pre><code><span class="nv">$ </span>./gradlew pmdMain <span class="nt">-q</span>
+<span class="nv">$ </span><span class="nb">ls </span>build/reports/pmd/
+main.html main.xml
+</code></pre>
+    </div>
+  </div>
+
+  <h3>
+    <span id="findbugscheckstylepmd-を一度に実行したい" class="fragment"></span><a
+      href="#findbugscheckstylepmd-%E3%82%92%E4%B8%80%E5%BA%A6%E3%81%AB%E5%AE%9F%E8%A1%8C%E3%81%97%E3%81%9F%E3%81%84"><i
+        class="fa fa-link"></i></a>findbugs/checkstyle/pmd を一度に実行したい
+  </h3>
+
+  <p>それぞれのタスクが check タスクに依存しているため、check タスクを実行すれば良い。</p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">ターミナル</span></div>
+    <div class="highlight">
+      <pre><code><span class="nv">$ </span>./gradlew check <span class="nt">-q</span>
+</code></pre>
+    </div>
+  </div>
+
+  <h3>
+    <span id="jacoco-doc" class="fragment"></span><a href="#jacoco-doc"><i class="fa fa-link"></i></a>jacoco (<a
+      href="https://docs.gradle.org/current/userguide/jacoco_plugin.html" rel="nofollow noopener"
+      target="_blank">doc</a>)
+  </h3>
+
+  <p>コードカバレッジ測定に利用します。</p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">build.gradle</span></div>
+    <div class="highlight">
+      <pre><code><span class="n">apply</span> <span class="nl">plugin:</span> <span class="s2">"jacoco"</span>
+</code></pre>
+    </div>
+  </div>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">ターミナル</span></div>
+    <div class="highlight">
+      <pre><code><span class="nv">$ </span>./gradlew <span class="nb">test </span>jacocoTestReport <span class="nt">-q</span>
+<span class="nv">$ </span><span class="nb">ls </span>build/reports/jacoco/test/html/
+hello                index.html           jacoco-resources     jacoco-sessions.html
+</code></pre>
+    </div>
+  </div>
+
+  <h2>
+    <span id="ビルドエラーの調査" class="fragment"></span><a
+      href="#%E3%83%93%E3%83%AB%E3%83%89%E3%82%A8%E3%83%A9%E3%83%BC%E3%81%AE%E8%AA%BF%E6%9F%BB"><i
+        class="fa fa-link"></i></a>ビルドエラーの調査
+  </h2>
+
+  <p>--debug や --stacktrace を利用しましょう。</p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">ターミナル</span></div>
+    <div class="highlight">
+      <pre><code><span class="nv">$ </span>./gradlew clean build <span class="nt">--debug</span> 
+<span class="nv">$ </span>./gradlew clean build <span class="nt">--stacktrace</span> 
+</code></pre>
+    </div>
+  </div>
+
+  <h1>
+    <span id="タスクの作り方" class="fragment"></span><a
+      href="#%E3%82%BF%E3%82%B9%E3%82%AF%E3%81%AE%E4%BD%9C%E3%82%8A%E6%96%B9"><i class="fa fa-link"></i></a>タスクの作り方
+  </h1>
+
+  <p>ここまで見てきたように、Gradle ではデフォルトで用意されているタスクや、プラグインによって追加されるタスクがあります。<br>
+    それだけでなく、自身でタスクを追加することが可能です。</p>
+
+  <h2>
+    <span id="hello-task" class="fragment"></span><a href="#hello-task"><i class="fa fa-link"></i></a>Hello Task
+  </h2>
+
+  <p>タスクを定義するには Project クラスの task メソッドを利用します。</p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">build.gradle</span></div>
+    <div class="highlight">
+      <pre><code><span class="n">task</span> <span class="n">hello</span> <span class="o">{</span>
+  <span class="o">...</span><span class="err">ここにタスク定義</span>
+<span class="o">}</span>
+</code></pre>
+    </div>
+  </div>
+
+  <p>タスク定義の際に注意しなくてはいけないのは、タスクのクロージャスコープは初期化時に実行されます。<br>
+    タスク実行時に実行するべき処理は doLast メソッドで指定します。</p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">build.gradle</span></div>
+    <div class="highlight">
+      <pre><code><span class="n">task</span> <span class="n">hello</span> <span class="o">{</span>
+  <span class="n">doLast</span> <span class="o">{</span>
+    <span class="n">println</span> <span class="s2">"Hello Task!!"</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+    </div>
+  </div>
+
+  <p>以前のバージョンでは leftShift ( &lt;&lt; ) を利用した定義が推奨されていましたが、現在のバージョンでは &lt;&lt;
+    は非推奨となり、次バージョン以降で定義できなくなる可能性があるため doLast で定義するようにしましょう。</p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">build.gradle(非推奨)</span></div>
+    <div class="highlight">
+      <pre><code><span class="n">task</span> <span class="n">hello</span> <span class="o">&lt;&lt;</span> <span class="o">{</span>
+  <span class="n">println</span> <span class="s2">"Hello Task!!"</span>
+<span class="o">}</span>
+</code></pre>
+    </div>
+  </div>
+
+  <p>doLast を利用した例ではインデントが1つ深く少し見づらいため、初期化が不要な場合は下記のように記述可能です。</p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">build.gradle</span></div>
+    <div class="highlight">
+      <pre><code><span class="n">task</span> <span class="n">hello</span> <span class="n">doLast</span> <span class="o">{</span>
+  <span class="n">println</span> <span class="s2">"Hello Task!!"</span>
+<span class="o">}</span>
+</code></pre>
+    </div>
+  </div>
+
+  <h2>
+    <span id="buildscript-プロパティ" class="fragment"></span><a
+      href="#buildscript-%E3%83%97%E3%83%AD%E3%83%91%E3%83%86%E3%82%A3"><i class="fa fa-link"></i></a>buildscript
+    プロパティ
+  </h2>
+
+  <p>プロダクトコードではなく、ビルドスクリプト( build.gradle )内で利用するプラグインや依存関係の定義については buildscript に定義します。<br>
+    OSSなどを利用する場合は、プロダクトコード同様に repositories と dependencies に定義します。</p>
+
+  <p>下記は maven セントラルリポジトリから、JGit(GitクライアントのJava実装)を利用する場合の例です。</p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">build.gradle</span></div>
+    <div class="highlight">
+      <pre><code><span class="n">buildscript</span> <span class="o">{</span>
+  <span class="n">repositories</span> <span class="o">{</span>
+    <span class="n">mavenCentral</span><span class="o">()</span>
+  <span class="o">}</span>
+  <span class="n">dependencies</span> <span class="o">{</span>
+    <span class="n">classpath</span> <span class="nl">group:</span> <span class="s1">'org.eclipse.jgit'</span><span class="o">,</span> <span class="nl">name:</span> <span class="s1">'org.eclipse.jgit'</span><span class="o">,</span> <span class="nl">version:</span> <span class="s1">'4.8.0.201706111038-r'</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+    </div>
+  </div>
+
+  <h1>
+    <span id="プラグインの作り方" class="fragment"></span><a
+      href="#%E3%83%97%E3%83%A9%E3%82%B0%E3%82%A4%E3%83%B3%E3%81%AE%E4%BD%9C%E3%82%8A%E6%96%B9"><i
+        class="fa fa-link"></i></a>プラグインの作り方
+  </h1>
+
+  <p>Gradle のプラグインは自身で作成することも可能です。プロジェクトを跨いで共通化したいタスクなどをプラグイン化しておくと、毎回 build.gradle
+    に複製する必要がなくなるため便利になります。</p>
+
+  <h2>
+    <span id="hello-plugin" class="fragment"></span><a href="#hello-plugin"><i class="fa fa-link"></i></a>Hello
+    Plugin
+  </h2>
+
+  <h3>
+    <span id="プラグイン実装" class="fragment"></span><a
+      href="#%E3%83%97%E3%83%A9%E3%82%B0%E3%82%A4%E3%83%B3%E5%AE%9F%E8%A3%85"><i class="fa fa-link"></i></a>プラグイン実装
+  </h3>
+
+  <p>通常のプロジェクトのように、ディレクトリを作成し、gradle init で初期化します。</p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">ターミナル</span></div>
+    <div class="highlight">
+      <pre><code><span class="nv">$ </span><span class="nb">mkdir </span>HelloGradlePlugin
+<span class="nv">$ </span><span class="nb">cd </span>HelloGradlePlugin
+<span class="nv">$ </span>gradle init
+</code></pre>
+    </div>
+  </div>
+
+  <p>プラグインのソースコードを配置するディレクトリと、プラグイン公開定義用ディレクトリを作成します。</p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">ターミナル</span></div>
+    <div class="highlight">
+      <pre><code><span class="nv">$ </span><span class="nb">mkdir</span> <span class="nt">-p</span> src/main/groovy/sample
+<span class="nv">$ </span><span class="nb">mkdir</span> <span class="nt">-p</span> src/main/resources/META-INF/gradle-plugins
+</code></pre>
+    </div>
+  </div>
+
+  <p>今回は Groovy 言語を利用してプラグインを作成するため、groovy プラグインを導入します。Groovy に限らず、Java や Scala などの JVM
+    言語であればプラグインを作成することが可能です。Gradle 標準のプラグインの多くは Java で作られているようです。</p>
+
+  <p>また、Gradle プラグインを作成するためのクラス群や、Groovy 言語への依存関係を dependencies へ指定します。<br>
+    プラグインは最終的に jar ファイルへ変換するため、jar ファイルの名前も定義しておきます。</p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">build.gradle</span></div>
+    <div class="highlight">
+      <pre><code><span class="n">apply</span> <span class="nl">plugin:</span> <span class="s1">'groovy'</span>
+
+<span class="n">dependencies</span> <span class="o">{</span>
+    <span class="n">compile</span> <span class="nf">gradleApi</span><span class="o">()</span>
+    <span class="n">compile</span> <span class="nf">localGroovy</span><span class="o">()</span>
+<span class="o">}</span>
+
+<span class="n">jar</span><span class="o">.</span><span class="na">baseName</span> <span class="o">=</span> <span class="s1">'hello-gradle-plugin'</span>
+</code></pre>
+    </div>
+  </div>
+
+  <p>プラグイン本体ソースを作成します。<br>
+    プラグインを作成する際のポイントは下記です。</p>
+
+  <ul>
+    <li>org.gradle.api.Plugin インタフェースを実装する</li>
+    <li>Plugin#apply() メソッドをオーバライド実装する</li>
+    <li>apply() メソッドの引数である org.gradle.api.Project インスタンスに対して各種設定を追加する</li>
+  </ul>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">src/main/groovy/sample/HelloPlugin.groovy</span></div>
+    <div class="highlight">
+      <pre><code><span class="kn">package</span> <span class="nn">sample</span>
+
+<span class="kn">import</span> <span class="nn">org.gradle.api.Plugin</span>
+<span class="kn">import</span> <span class="nn">org.gradle.api.Project</span>
+
+<span class="kd">class</span> <span class="nc">HelloPlugin</span> <span class="kd">implements</span> <span class="n">Plugin</span><span class="o">&lt;</span><span class="n">Project</span><span class="o">&gt;</span> <span class="o">{</span>
+  <span class="nd">@Override</span>
+  <span class="kt">void</span> <span class="nf">apply</span><span class="o">(</span><span class="n">Project</span> <span class="n">project</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">project</span><span class="o">.</span><span class="na">task</span><span class="o">(</span><span class="s1">'hello'</span><span class="o">)</span> <span class="n">doLast</span> <span class="o">{</span>
+      <span class="n">println</span> <span class="s2">"Hello Gradle Plugin!!"</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+    </div>
+  </div>
+
+  <p>プラグイン公開用定義を専用の properties ファイルに記述します。<br>
+    implementation-class に先程作成したクラスを指定します。</p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span
+        class="bold">src/main/resources/META-INF/gradle-plugins/com.github.hatimiti.hello.properties</span>
+    </div>
+    <div class="highlight">
+      <pre><code><span class="n">implementation</span><span class="o">-</span><span class="kd">class</span><span class="err">=</span><span class="nc">sample</span><span class="o">.</span><span class="na">HelloPlugin</span>
+</code></pre>
+    </div>
+  </div>
+
+  <p>jar ファイルを作成します。<br>
+    jar タスクが成功すると、build/libs 配下に jar ファイルが作成されます。</p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">ターミナル</span></div>
+    <div class="highlight">
+      <pre><code><span class="nv">$ </span>./gradlew jar
+<span class="nv">$ </span><span class="nb">ls </span>build/libs/hello-gradle-plugin.jar
+build/libs/hello-gradle-plugin.jar
+</code></pre>
+    </div>
+  </div>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">tree(抜粋)</span></div>
+    <div class="highlight">
+      <pre><code>~/java/HelloGradlePlugin
+|--build
+|  |--classes
+|  |--libs
+|  |  |--hello-gradle-plugin.jar
+|--build.gradle
+|--src
+|  |--main
+|  |  |--groovy
+|  |  |  |--sample
+|  |  |  |  |--HelloPlugin.groovy
+|  |  |--resources
+|  |  |  |--META-INF
+|  |  |  |  |--gradle-plugins
+|  |  |  |  |  |--com.github.hatimiti.hello.properties
+</code></pre>
+    </div>
+  </div>
+
+  <h3>
+    <span id="作成したプラグインを利用してみる" class="fragment"></span><a
+      href="#%E4%BD%9C%E6%88%90%E3%81%97%E3%81%9F%E3%83%97%E3%83%A9%E3%82%B0%E3%82%A4%E3%83%B3%E3%82%92%E5%88%A9%E7%94%A8%E3%81%97%E3%81%A6%E3%81%BF%E3%82%8B"><i
+        class="fa fa-link"></i></a>作成したプラグインを利用してみる
+  </h3>
+
+  <p>作成した プラグインの jar ファイルを、利用したい側のプロジェクト配下へコピーする。</p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">ターミナル</span></div>
+    <div class="highlight">
+      <pre><code><span class="nv">$ </span><span class="nb">cd</span> ..
+<span class="nv">$ </span><span class="nb">cp </span>HelloGradlePlugin/build/libs/hello-gradle-plugin.jar samplepj/
+<span class="nv">$ </span><span class="nb">cd </span>samplepj
+</code></pre>
+    </div>
+  </div>
+
+  <p>配置した jar ファイルを buildscript の dependencies に指定します。<br>
+    そして、先程 META-INF 配下に配置した properties ファイルの '.properties' を除いたファイル名を apply メソッドに指定します。</p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">build.gradle</span></div>
+    <div class="highlight">
+      <pre><code><span class="n">buildscript</span> <span class="o">{</span>
+    <span class="n">dependencies</span> <span class="o">{</span>
+        <span class="n">classpath</span> <span class="nf">files</span><span class="o">(</span><span class="s1">'./hello-gradle-plugin.jar'</span><span class="o">)</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="n">apply</span> <span class="nl">plugin:</span> <span class="s1">'com.github.hatimiti.hello'</span>
+</code></pre>
+    </div>
+  </div>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">ターミナル</span></div>
+    <div class="highlight">
+      <pre><code><span class="nv">$ </span>./gradlew hello
+
+<span class="o">&gt;</span> Task :hello
+Hello Gradle Plugin!!
+</code></pre>
+    </div>
+  </div>
+
+  <h2>
+    <span id="プラグインprojectにプロパティやメソッドを追加する" class="fragment"></span><a
+      href="#%E3%83%97%E3%83%A9%E3%82%B0%E3%82%A4%E3%83%B3project%E3%81%AB%E3%83%97%E3%83%AD%E3%83%91%E3%83%86%E3%82%A3%E3%82%84%E3%83%A1%E3%82%BD%E3%83%83%E3%83%89%E3%82%92%E8%BF%BD%E5%8A%A0%E3%81%99%E3%82%8B"><i
+        class="fa fa-link"></i></a>プラグイン(Project)にプロパティやメソッドを追加する
+  </h2>
+
+  <p>先程作成したプラグインディレクトリに移動します。</p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">ターミナル</span></div>
+    <div class="highlight">
+      <pre><code><span class="nv">$ </span><span class="nb">pwd</span>
+~/java/HelloGradlePlugin
+</code></pre>
+    </div>
+  </div>
+
+  <p>プロパティを追加する場合は<strong><em>Extensionや</em></strong>Configurationクラスを追加します。</p>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">src/main/groovy/sample/HelloPluginExtension.groovy</span></div>
+    <div class="highlight">
+      <pre><code><span class="kn">package</span> <span class="nn">sample</span>
+
+<span class="kd">class</span> <span class="nc">HelloPluginExtension</span> <span class="o">{</span>
+  <span class="n">String</span> <span class="n">value</span>
+  <span class="kt">void</span> <span class="nf">extension</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">println</span><span class="o">(</span><span class="s2">"Hello Extension!!"</span><span class="o">)</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+    </div>
+  </div>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">src/main/groovy/sample/HelloPlugin.groovy</span></div>
+    <div class="highlight">
+      <pre><code><span class="kn">package</span> <span class="nn">sample</span>
+
+<span class="kn">import</span> <span class="nn">org.gradle.api.Plugin</span>
+<span class="kn">import</span> <span class="nn">org.gradle.api.Project</span>
+
+<span class="kd">class</span> <span class="nc">HelloPlugin</span> <span class="kd">implements</span> <span class="n">Plugin</span><span class="o">&lt;</span><span class="n">Project</span><span class="o">&gt;</span> <span class="o">{</span>
+  <span class="nd">@Override</span>
+  <span class="kt">void</span> <span class="nf">apply</span><span class="o">(</span><span class="n">Project</span> <span class="n">project</span><span class="o">)</span> <span class="o">{</span>
+    <span class="kt">def</span> <span class="n">extension</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HelloPluginExtension</span><span class="o">()</span>
+    <span class="n">project</span><span class="o">.</span><span class="na">extensions</span><span class="o">.</span><span class="na">hello</span> <span class="o">=</span> <span class="n">extension</span>
+    <span class="n">project</span><span class="o">.</span><span class="na">task</span><span class="o">(</span><span class="s1">'hello'</span><span class="o">)</span> <span class="n">doLast</span> <span class="o">{</span>
+      <span class="n">println</span> <span class="s2">"Hello Gradle Plugin and ${extension.value}!!"</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre>
+    </div>
+  </div>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">ターミナル</span></div>
+    <div class="highlight">
+      <pre><code><span class="nv">$ </span>./gradlew jar
+</code></pre>
+    </div>
+  </div>
+
+  <h2>
+    <span id="追加したプロパティを利用してみる" class="fragment"></span><a
+      href="#%E8%BF%BD%E5%8A%A0%E3%81%97%E3%81%9F%E3%83%97%E3%83%AD%E3%83%91%E3%83%86%E3%82%A3%E3%82%92%E5%88%A9%E7%94%A8%E3%81%97%E3%81%A6%E3%81%BF%E3%82%8B"><i
+        class="fa fa-link"></i></a>追加したプロパティを利用してみる
+  </h2>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">ターミナル</span></div>
+    <div class="highlight">
+      <pre><code><span class="nv">$ </span><span class="nb">cd</span> ..
+<span class="nv">$ </span><span class="nb">cp </span>HelloGradlePlugin/build/libs/hello-gradle-plugin.jar samplepj/
+<span class="nv">$ </span><span class="nb">cd </span>samplepj
+</code></pre>
+    </div>
+  </div>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">build.gradle</span></div>
+    <div class="highlight">
+      <pre><code><span class="n">buildscript</span> <span class="o">{</span>
+    <span class="n">dependencies</span> <span class="o">{</span>
+        <span class="n">classpath</span> <span class="nf">files</span><span class="o">(</span><span class="s1">'./hello-gradle-plugin.jar'</span><span class="o">)</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="n">apply</span> <span class="nl">plugin:</span> <span class="s1">'com.github.hatimiti.hello'</span>
+
+<span class="n">hello</span> <span class="o">{</span>
+  <span class="n">value</span> <span class="o">=</span> <span class="s2">"Eeeeextension"</span>
+  <span class="n">extension</span><span class="o">()</span>
+<span class="o">}</span>
+</code></pre>
+    </div>
+  </div>
+
+  <div class="code-frame">
+    <div class="code-lang"><span class="bold">ターミナル</span></div>
+    <div class="highlight">
+      <pre><code><span class="nv">$ </span>./gradlew hello
+
+<span class="o">&gt;</span> Configure project :
+Hello Extension!!
+
+<span class="o">&gt;</span> Task :hello
+Hello Gradle Plugin and Eeeeextension!!
+</code></pre>
+    </div>
+  </div>
+
+  <h1>
+    <span id="色々な-gradle-プラグイン" class="fragment"></span><a
+      href="#%E8%89%B2%E3%80%85%E3%81%AA-gradle-%E3%83%97%E3%83%A9%E3%82%B0%E3%82%A4%E3%83%B3"><i
+        class="fa fa-link"></i></a>色々な Gradle プラグイン
+  </h1>
+
+  <ul>
+    <li>
+      <a href="https://plugins.gradle.org/plugin/com.dorongold.task-tree" rel="nofollow noopener"
+        target="_blank">com.dorongold.task-tree</a>…… task の依存関係をツリー表示する
+    </li>
+  </ul>
+
+  <div class="code-frame">
+    <div class="highlight">
+      <pre><code><span class="nv">$ </span>gradle build taskTree
+
+<span class="o">&gt;</span> Task :taskTree
+
+<span class="nt">------------------------------------------------------------</span>
+Root project
+<span class="nt">------------------------------------------------------------</span>
+
+:build
++--- :assemble
+|    +--- :distTar
+|    |    +--- :jar
+|    |    |    <span class="se">\-</span><span class="nt">--</span> :classes
+|    |    |         +--- :compileJava
+|    |    |         <span class="se">\-</span><span class="nt">--</span> :processResources
+|    |    <span class="se">\-</span><span class="nt">--</span> :startScripts
+|    +--- :distZip
+|    |    +--- :jar
+|    |    |    <span class="se">\-</span><span class="nt">--</span> :classes
+|    |    |         +--- :compileJava
+|    |    |         <span class="se">\-</span><span class="nt">--</span> :processResources
+|    |    <span class="se">\-</span><span class="nt">--</span> :startScripts
+|    <span class="se">\-</span><span class="nt">--</span> :jar
+|         <span class="se">\-</span><span class="nt">--</span> :classes
+|              +--- :compileJava
+|              <span class="se">\-</span><span class="nt">--</span> :processResources
+<span class="se">\-</span><span class="nt">--</span> :check
+     <span class="se">\-</span><span class="nt">--</span> :test
+          +--- :classes
+          |    +--- :compileJava
+          |    <span class="se">\-</span><span class="nt">--</span> :processResources
+          <span class="se">\-</span><span class="nt">--</span> :testClasses
+               +--- :compileTestJava
+               |    <span class="se">\-</span><span class="nt">--</span> :classes
+               |         +--- :compileJava
+               |         <span class="se">\-</span><span class="nt">--</span> :processResources
+               <span class="se">\-</span><span class="nt">--</span> :processTestResources
+</code></pre>
+    </div>
+  </div>
+
+  <h1>
+    <span id="ドキュメント" class="fragment"></span><a href="#%E3%83%89%E3%82%AD%E3%83%A5%E3%83%A1%E3%83%B3%E3%83%88"><i
+        class="fa fa-link"></i></a>ドキュメント
+  </h1>
+
+  <ul>
+    <li><a href="http://gradle.monochromeroad.com/docs/dsl/org.gradle.api.Project.html" rel="nofollow noopener"
+        target="_blank">DSL - Project</a></li>
+    <li><a href="http://gradle.monochromeroad.com/docs/userguide/java_plugin.html" rel="nofollow noopener"
+        target="_blank">Java プラグイン</a></li>
+    <li><a href="https://docs.spring.io/spring-boot/docs/current/reference/html/build-tool-plugins-gradle-plugin.html"
+        rel="nofollow noopener" target="_blank">Spring Boot Gradle plugin</a></li>
+    <li><a href="https://docs.gradle.org/current/dsl/org.gradle.api.Project.html" rel="nofollow noopener"
+        target="_blank">Gradle DSL ドキュメント</a></li>
+  </ul>
+
+  <h1>
+    <span id="参考書籍" class="fragment"></span><a href="#%E5%8F%82%E8%80%83%E6%9B%B8%E7%B1%8D"><i
+        class="fa fa-link"></i></a>参考書籍
+  </h1>
+
+  <p>Gradle徹底入門 次世代ビルドツールによる自動化基盤の構築<br>
+    <a><img
+        src="https://qiita-user-contents.imgix.net/https%3A%2F%2Fqiita-image-store.s3.amazonaws.com%2F0%2F50032%2F132df934-7628-2a89-2e17-423121f3f6ef.png?ixlib=rb-4.0.0&amp;auto=format&amp;gif-q=60&amp;q=75&amp;s=09afd0e1a502726d31af49700c042482"
+        width="30%"
+        srcset="https://qiita-user-contents.imgix.net/https%3A%2F%2Fqiita-image-store.s3.amazonaws.com%2F0%2F50032%2F132df934-7628-2a89-2e17-423121f3f6ef.png?ixlib=rb-4.0.0&amp;auto=format&amp;gif-q=60&amp;q=75&amp;w=1400&amp;fit=max&amp;s=b4b8c2e5fa253ee4d9387905457a369e 1x"
+        loading="lazy"></a>
+  </p>
+
+  <h1>
+    <span id="参考サイト" class="fragment"></span><a href="#%E5%8F%82%E8%80%83%E3%82%B5%E3%82%A4%E3%83%88"><i
+        class="fa fa-link"></i></a>参考サイト
+  </h1>
+
+  <ul>
+    <li><a href="http://codezine.jp/article/detail/3757" rel="nofollow noopener" target="_blank">CodeZine -
+        Groovyってどんな言語？ JavaプログラマのためのGroovy入門</a></li>
+    <li><a href="https://www.ibm.com/developerworks/jp/java/library/j-pg10255/index.html" rel="nofollow noopener"
+        target="_blank">IBM developerWorks - 実用的なGroovy: スムースな演算子</a></li>
+    <li><a href="https://www.slideshare.net/nobeans/javagroovy" rel="nofollow noopener" target="_blank">SlideShare
+        - Java開発の強力な相棒として今すぐ使えるGroovy</a></li>
+    <li><a href="http://qiita.com/opengl-8080/items/a0bb31fb20cb6505188b" id="reference-0ff602305569114e6a76">Qiita -
+        Groovyを知らない人のためのbuild.gradle読み書き入門</a></li>
+    <li><a href="http://qiita.com/saba1024/items/b57c412961e1a2779881" id="reference-2222cac64bbd13f2483d">Qiita -
+        [Groovy]クロージャのthis、owner、delegateについて</a></li>
+    <li><a href="http://qiita.com/opengl-8080/items/fcf60ba5daf658f39951" id="reference-1e19cde9a24e59beab74">Qiita -
+        Gradle のプラグインの作り方メモ</a></li>
+  </ul>
+</body>
+
+</html>

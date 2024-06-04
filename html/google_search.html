@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Google検索</title>
+</head>
+
+<body>
+    <input id="input" type="text">
+    <select id="select">
+        <option></option>
+    </select>
+    <p><a id="link">Google検索</a></p>
+    <script>
+        const params = {
+            q: null, // キーワード（検索ワード）
+            oq: null, // キーワード（入力ワード）
+            tbm: null, // 検索の種類
+            ie: 'utf-8', // 文字コード（クエリ）
+            oe: 'utf-8', // 文字コード（検索結果）
+            hl: 'ja', // 表示される言語
+            lr: 'lang_ja', // 検索する言語
+            num: 100, // 1ページあたりの検索結果の数
+            source: 'hp', // アクセス元
+            safe: 'off', // セーフサーチのレベル
+            filter: 1, // 類似ページをフィルタリング
+            gbv: 2, // javascript
+            tbs: null, // 画像の種類
+            pws: null // パーソナライズ
+        };
+        const tbms = {
+            isch: '画像検索',
+            vid: '動画検索',
+            nws: 'ニュース検索',
+            shop: 'ショッピング検索',
+            bks: '書籍検索',
+            blg: 'ブログ検索',
+            pts: '特許検索'
+        };
+        const input = document.querySelector('#input');
+        const select = document.querySelector('#select');
+        const link = document.querySelector('#link');
+        Object.values(tbms).forEach(value => {
+            const option = document.createElement('option');
+            option.textContent = value;
+            select.append(option);
+        });
+        input.addEventListener('input', () => {
+            params.q = input.value;
+            params.oq = input.value;
+            params.tbm = Object.keys(tbms).find(key => {
+                return tbms[key] === select.value;
+            }) || null;
+            const searchParams = Object.entries(params).filter(([key, value]) => {
+                return value !== null;
+            }).reduce((obj, [key, value]) => {
+                obj[key] = value;
+                return obj;
+            }, {});
+            const queryString = new URLSearchParams(searchParams).toString();
+            link.setAttribute('href', `https://www.google.com/search?${queryString}`);
+        });
+        select.addEventListener('change', () => {
+            input.dispatchEvent(new Event('input'));
+        });
+    </script>
+</body>
+
+</html>

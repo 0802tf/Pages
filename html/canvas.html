@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <title>canvas</title>
+    <style>
+        .canvas {
+            border: solid 1px #000000;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="option">
+        <div>
+            幅: <input type="range" min="1" id="width">
+            高さ: <input type="range" min="1" id="height">
+        </div>
+        <div>
+            線の太さ: <input type="range" value="5" min="1" id="bold">
+            線の先端: <select id="lineCap">
+                <option>round</option>
+                <option>butt</option>
+            </select>
+        </div>
+        <div>
+            線の色: <input type="color" value="#000000" id="linecolor">
+            背景色: <input type="color" value="#ffffff" id="backgroundcolor">
+        </div>
+        <div>
+            <input type="checkbox" id="checkbox">数値指定
+            <input type="file" id="file" accept="image/*" multiple>
+            <button id="clear">クリア</button>
+            <a id="download" href="#">ダウンロード</a>
+        </div>
+    </div>
+    <canvas class="canvas"></canvas>
+    <script>
+        const canvas = document.querySelector('canvas');
+        const context = canvas.getContext('2d');
+        const bold = document.querySelector('#bold');
+        const download = document.querySelector('#download');
+        const backgroundcolor = document.querySelector('#backgroundcolor');
+        const width = document.querySelector('#width');
+        const height = document.querySelector('#height');
+        let clickFlg = 0;
+        setTimeout(() => {
+            canvas.width = innerWidth * 19 / 20;
+            canvas.height = innerHeight - document.querySelector('#option').clientHeight;
+            width.setAttribute('max', canvas.width * 2);
+            height.setAttribute('max', canvas.height * 2);
+            width.value = canvas.width;
+            height.value = canvas.height;
+            bold.setAttribute('max', Math.min(width.value, height.value));
+            setBackgroundColor();
+        }, 100);
+        width.addEventListener('input', () => canvas.width = width.value);
+        height.addEventListener('input', () => canvas.height = height.value);
+        canvas.addEventListener('mousedown', () => clickFlg = 1);
+        canvas.addEventListener('mouseup', () => clickFlg = 0);
+        canvas.addEventListener('mousemove', e => {
+            e.preventDefault();
+            draw(e.offsetX, e.offsetY);
+        });
+        canvas.addEventListener('touchstart', () => clickFlg = 1);
+        canvas.addEventListener('touchend', () => clickFlg = 0);
+        canvas.addEventListener('touchmove', e => {
+            e.preventDefault();
+            draw(e.touches[0].pageX - canvas.offsetLeft, e.touches[0].pageY - canvas.offsetTop);
+        });
+        function draw(x, y) {
+            if (!clickFlg) {
+                return;
+            }
+            context.lineWidth = bold.value;
+            context.strokeStyle = document.querySelector('#linecolor').value;
+            if (clickFlg === 1) {
+                clickFlg = 2;
+                context.beginPath();
+                context.lineCap = document.querySelector('#lineCap').value;
+                context.moveTo(x, y);
+            } else {
+                context.lineTo(x, y);
+            }
+            context.stroke();
+        };
+        document.querySelector('#checkbox').addEventListener('input', e => {
+            const type = e.target.checked ? 'number' : 'range';
+            bold.setAttribute('type', type);
+            width.setAttribute('type', type);
+            height.setAttribute('type', type);
+        })
+        document.querySelector('#clear').addEventListener('click', () => {
+            context.clearRect(0, 0, width.value, height.value);
+            setBackgroundColor();
+        });
+        download.addEventListener('click', () => {
+            const fileName = prompt('ファイル名', 'sample.jpg');
+            if (fileName) {
+                download.href = canvas.toDataURL('image/jpeg');
+                download.download = fileName;
+            }
+        });
+        backgroundcolor.addEventListener('input', setBackgroundColor);
+        function setBackgroundColor() {
+            context.fillStyle = backgroundcolor.value;
+            context.fillRect(0, 0, width.value, height.value);
+        }
+        document.querySelector('#file').addEventListener('change', e => {
+            const file = e.target.files[0];
+            new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => reject(reader.error);
+                reader.readAsDataURL(file);
+            }).then(data => {
+                const image = new Image();
+                image.src = data;
+                image.onload = () => {
+                    canvas.width = image.naturalWidth;
+                    canvas.height = image.naturalHeight;
+                    width.value = canvas.width;
+                    height.value = canvas.height;
+                    context.drawImage(image, 0, 0);
+                };
+            }).catch(e => alert(e));
+        });
+    </script>
+</body>
+
+</html>

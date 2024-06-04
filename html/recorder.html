@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width">
+  <title>recorder</title>
+</head>
+
+<body>
+  <div>
+    <button id="start">開始</button>
+    <button id="stop" disabled>停止</button>
+    <button id="download">ダウンロード</button>
+  </div>
+  <div>
+    <video id="video"></video>
+  </div>
+  <div>
+    <video id="preview"></video>
+  </div>
+  <script>
+    let recorder;
+    let recordData = [];
+    const video = document.querySelector('#video');
+    const startButton = document.querySelector('#start');
+    const stopButton = document.querySelector('#stop');
+    const downloadButton = document.querySelector('#download');
+    const preview = document.querySelector('#preview');
+    navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: true
+    }).then(stream => new Promise(resolve => {
+      video.srcObject = stream;
+      video.play();
+      recorder = new MediaRecorder(stream);
+      recorder.ondataavailable = e => resolve(e)
+    })).then(e => {
+      preview.setAttribute('controls', '');
+      preview.setAttribute('width', video.videoWidth);
+      preview.setAttribute('height', video.videoHeight);
+      recordData.push(e.data);
+      preview.src = URL.createObjectURL(e.data);
+    });
+    startButton.addEventListener('click', e => {
+      recorder.start();
+      e.preventDefault();
+      startButton.toggleAttribute('disabled');
+      stopButton.toggleAttribute('disabled');
+    }, false);
+    stopButton.addEventListener('click', () => {
+      recorder.stop();
+      startButton.toggleAttribute('disabled');
+      stopButton.toggleAttribute('disabled');
+    });
+    downloadButton.addEventListener('click', () => {
+      if(recordData.length === 0){
+        return;
+      }
+      const blob = new Blob(recordData, { type: 'video/webm' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const digit = '2-digit';
+      a.href = url;
+      a.download = `${new Date().toLocaleString('ja-JP', {
+        year: 'numeric',
+        month: digit,
+        day: digit,
+        hour: digit,
+        minute: digit,
+        second: digit
+      }).replaceAll(/[^\d]/g, '')}.webm`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+  </script>
+</body>
+
+</html>
