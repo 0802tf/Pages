@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>AngularJS Sample</title>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.4/angular.min.js"></script>
+    <script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
     <script>
         var app = angular.module("myApp", []);
         app.controller("myController", function () {
@@ -25,6 +26,7 @@
                 }
             };
         });
+        mermaid.initialize({ startOnLoad: true });
     </script>
 </head>
 
@@ -40,6 +42,41 @@
     <hr>
     <pre>{{myCtrl|json}}</pre>
     <hr>
+    <div class="mermaid">
+        flowchart TD
+        A[PA]
+
+        subgraph Fujiki
+        B[Keyboard\nnord electro]
+        C[PC\nMacbook Pro]
+        D[Audio Interface\nUR24C]
+        E[DJ Pad\nKAOSS PAD]
+        end
+
+        subgraph kenuthi
+        F[DJ Effector\nRMX-500]
+        G[Electric Guitar\nTelecaster]
+        H[Synth Pad\nKAOSSILATOR]
+        I[Keyboard\nmicroKORG]
+        J[Sampler\nMPC Live]
+        K[Small Mixer\nAM602FX]
+        L[Vocal Effector\nBOSS VE-20]
+        M[Mic]
+        end
+
+        B==>D
+        C-->D
+        D==>E
+        E==>F
+        G-->D
+        F==>|Stereo|A
+        H==>K
+        I==>K
+        J==>K
+        K==>|Stereo|A
+        M-->L
+        L-->|Mic|A
+    </div>
 </body>
 
 </html>
